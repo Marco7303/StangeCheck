@@ -241,15 +241,28 @@ function App() {
       });
 
       const updateVisibleSpots = () => syncVisibleSpots(map);
+      const handleMapSurfaceClick = (event) => {
+        const target = event.target;
+
+        if (
+          target instanceof Element &&
+          target.closest(".custom-marker, .mapboxgl-popup")
+        ) {
+          return;
+        }
+
+        setSelectedId(null);
+      };
 
       spots.forEach((spot) => {
         const markerNode = document.createElement("button");
         markerNode.type = "button";
         markerNode.className = "custom-marker";
-        markerNode.innerHTML = `
-          <span>${spot.city}</span>
-          <strong>${numberFormat.format(spot.price)}</strong>
-        `;
+        markerNode.setAttribute(
+          "aria-label",
+          `${spot.name} in ${spot.city} for ${numberFormat.format(spot.price)}`,
+        );
+        markerNode.innerHTML = `<strong>${numberFormat.format(spot.price)}</strong>`;
 
         const marker = new mapboxgl.Marker({
           element: markerNode,
@@ -258,7 +271,8 @@ function App() {
           .setLngLat([spot.lng, spot.lat])
           .addTo(map);
 
-        markerNode.addEventListener("click", () => {
+        markerNode.addEventListener("click", (event) => {
+          event.stopPropagation();
           setSelectedId(spot.id);
         });
 
@@ -277,6 +291,7 @@ function App() {
 
       map.on("move", updateVisibleSpots);
       map.on("moveend", updateVisibleSpots);
+      map.getCanvasContainer().addEventListener("click", handleMapSurfaceClick);
       map.on("error", (event) => {
         if (cancelled || mapReady) {
           return;
@@ -293,6 +308,9 @@ function App() {
         cancelled = true;
         popupRef.current?.remove();
         popupRef.current = null;
+        map
+          .getCanvasContainer()
+          .removeEventListener("click", handleMapSurfaceClick);
         markersRef.current.forEach(({ marker }) => marker.remove());
         markersRef.current.clear();
         map.remove();
@@ -327,7 +345,7 @@ function App() {
       node.classList.toggle("is-selected", markerId === selectedVisibleSpot?.id);
       node.classList.toggle("is-visible", visibleIds.includes(markerId));
       marker.getElement().style.zIndex =
-        markerId === selectedVisibleSpot?.id ? "1000" : "120";
+        markerId === selectedVisibleSpot?.id ? "14" : "10";
     });
   }, [selectedVisibleSpot, visibleIds]);
 
@@ -440,11 +458,6 @@ function App() {
           <span>Average</span>
           <strong>{numberFormat.format(averageVisiblePrice || 0)}</strong>
         </div>
-      </div>
-
-      <div className="map-hint">
-        <span className="overlay-label">Viewport ranking</span>
-        <strong>{mapReady ? "Live on move" : "Loading map"}</strong>
       </div>
 
       {!mapboxAccessToken || mapError ? (
