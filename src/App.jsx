@@ -44,6 +44,18 @@ function matchesQuery(spot, query) {
   return haystack.includes(query);
 }
 
+function buildDirectionsUrl(spot) {
+  const destination = [
+    spot.name,
+    spot.address,
+    spot.city,
+    spot.canton,
+    "Switzerland",
+  ].join(", ");
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
+}
+
 function App() {
   const [theme, setTheme] = useState(() => {
     const storedTheme = window.localStorage.getItem("stange-check-theme");
@@ -84,7 +96,7 @@ function App() {
       }
 
       setSpots(rows);
-      setSelectedId(rows[0]?.id ?? null);
+      setSelectedId(null);
       setLoading(false);
     });
 
@@ -355,10 +367,21 @@ function App() {
       return;
     }
 
+    const directionsUrl = buildDirectionsUrl(selectedVisibleSpot);
+
     popupRef.current.setHTML(`
       <div class="info-window">
-        <strong>${selectedVisibleSpot.name}</strong>
-        <span>${numberFormat.format(selectedVisibleSpot.price)} · ${selectedVisibleSpot.beer}</span>
+        <div class="info-window-head">
+          <div>
+            <p class="info-window-kicker">${selectedVisibleSpot.city}, ${selectedVisibleSpot.canton}</p>
+            <strong>${selectedVisibleSpot.name}</strong>
+          </div>
+        </div>
+        <p class="info-window-meta">${selectedVisibleSpot.beer}</p>
+        <p class="info-window-address">${selectedVisibleSpot.address}</p>
+        <a class="info-window-link" href="${directionsUrl}" target="_blank" rel="noreferrer">
+          Open in Google Maps
+        </a>
       </div>
     `);
 
@@ -477,24 +500,6 @@ function App() {
           <div className="sidebar-count">{filteredVisibleSpots.length}</div>
         </div>
 
-        {selectedVisibleSpot ? (
-          <section className="selected-card">
-            <div className="selected-head">
-              <div>
-                <p className="sidebar-kicker">Selected venue</p>
-                <h3>{selectedVisibleSpot.name}</h3>
-              </div>
-              <strong>{numberFormat.format(selectedVisibleSpot.price)}</strong>
-            </div>
-            <p>
-              {selectedVisibleSpot.city}, {selectedVisibleSpot.canton} ·{" "}
-              {selectedVisibleSpot.beer}
-            </p>
-            <p>{selectedVisibleSpot.address}</p>
-            <small>{selectedVisibleSpot.vibe}</small>
-          </section>
-        ) : null}
-
         <div className="sidebar-scroll">
           {loading ? (
             <div className="empty-card">Loading venues…</div>
@@ -508,28 +513,25 @@ function App() {
             </div>
           ) : (
             <div className="results-list">
-              {filteredVisibleSpots
-                .filter((spot) => spot.id !== selectedVisibleSpot?.id)
-                .map((spot, index) => (
-                  <button
-                    key={spot.id}
-                    type="button"
-                    className="result-card"
-                    onClick={() => focusSpot(spot)}
-                  >
-                    <div className="result-rank">#{index + 1}</div>
-                    <div className="result-main">
-                      <div className="result-topline">
-                        <h4>{spot.name}</h4>
-                        <strong>{numberFormat.format(spot.price)}</strong>
-                      </div>
-                      <p>
-                        {spot.city}, {spot.canton} · {spot.beer}
-                      </p>
-                      <small>{spot.vibe}</small>
+              {filteredVisibleSpots.map((spot) => (
+                <button
+                  key={spot.id}
+                  type="button"
+                  className="result-card"
+                  onClick={() => focusSpot(spot)}
+                >
+                  <div className="result-main">
+                    <div className="result-topline">
+                      <h4>{spot.name}</h4>
+                      <strong>{numberFormat.format(spot.price)}</strong>
                     </div>
-                  </button>
-                ))}
+                    <p>
+                      {spot.city}, {spot.canton} · {spot.beer}
+                    </p>
+                    <small>{spot.vibe}</small>
+                  </div>
+                </button>
+              ))}
             </div>
           )}
         </div>
