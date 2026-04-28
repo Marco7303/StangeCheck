@@ -1,0 +1,10 @@
+{
+  "name": "import-osm",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Placeholder job for importing OSM venue data into Supabase",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}
