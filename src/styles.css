@@ -483,12 +483,15 @@ button {
 .mapboxgl-ctrl-bottom-left {
   left: 18px;
   bottom: 118px;
+  z-index: 40 !important;
 }
 
 .mapboxgl-ctrl-group {
   border-radius: 16px !important;
   overflow: hidden;
   box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18) !important;
+  position: relative;
+  z-index: 40;
 }
 
 .mapboxgl-ctrl-group button {
