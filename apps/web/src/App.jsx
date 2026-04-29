@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
-import { listBeerSpots } from "./lib/mockDb";
+import { listVenues } from "./lib/venues";
 
 const numberFormat = new Intl.NumberFormat("de-CH", {
   style: "currency",
@@ -44,6 +44,54 @@ function matchesQuery(spot, query) {
   return haystack.includes(query);
 }
 
+function compareByPrice(left, right) {
+  if (left.price == null && right.price == null) {
+    return left.name.localeCompare(right.name);
+  }
+
+  if (left.price == null) {
+    return 1;
+  }
+
+  if (right.price == null) {
+    return -1;
+  }
+
+  if (left.price === right.price) {
+    return left.name.localeCompare(right.name);
+  }
+
+  return left.price - right.price;
+}
+
+function formatPrice(value) {
+  return value == null ? "Price pending" : numberFormat.format(value);
+}
+
+function formatMarkerPrice(value) {
+  return value == null ? "Pending" : numberFormat.format(value);
+}
+
+function getMapBounds(spots) {
+  if (!spots.length) {
+    return swissBounds;
+  }
+
+  const latitudes = spots.map((spot) => spot.lat);
+  const longitudes = spots.map((spot) => spot.lng);
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLng = Math.min(...longitudes);
+  const maxLng = Math.max(...longitudes);
+  const latPadding = Math.max((maxLat - minLat) * 0.2, 0.01);
+  const lngPadding = Math.max((maxLng - minLng) * 0.2, 0.01);
+
+  return [
+    [minLng - lngPadding, minLat - latPadding],
+    [maxLng + lngPadding, maxLat + latPadding],
+  ];
+}
+
 function buildDirectionsUrl(spot) {
   const destination = [
     spot.name,
@@ -71,6 +119,7 @@ function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState("");
@@ -90,15 +139,37 @@ function App() {
   useEffect(() => {
     let active = true;
 
-    listBeerSpots().then((rows) => {
-      if (!active) {
-        return;
-      }
+    setLoading(true);
+    setLoadError("");
 
-      setSpots(rows);
-      setSelectedId(null);
-      setLoading(false);
-    });
+    listVenues()
+      .then((rows) => {
+        if (!active) {
+          return;
+        }
+
+        setSpots(
+          rows.filter(
+            (row) => Number.isFinite(row.lat) && Number.isFinite(row.lng),
+          ),
+        );
+        setSelectedId(null);
+      })
+      .catch((error) => {
+        if (!active) {
+          return;
+        }
+
+        setSpots([]);
+        setLoadError(
+          error instanceof Error ? error.message : "Unable to load venues.",
+        );
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       active = false;
@@ -108,7 +179,7 @@ function App() {
   const visibleSpots = useMemo(() => {
     return spots
       .filter((spot) => visibleIds.includes(spot.id))
-      .sort((left, right) => left.price - right.price);
+      .sort(compareByPrice);
   }, [spots, visibleIds]);
 
   const normalizedQuery = deferredSearch.trim().toLowerCase();
@@ -128,11 +199,15 @@ function App() {
   const selectedVisibleSpot = useMemo(() => {
     return visibleSpots.find((spot) => spot.id === selectedId) ?? null;
   }, [visibleSpots, selectedId]);
+  const datasetBounds = useMemo(() => getMapBounds(spots), [spots]);
 
-  const cheapestVisible = filteredVisibleSpots[0] ?? null;
+  const pricedVisibleSpots = filteredVisibleSpots.filter(
+    (spot) => spot.price != null,
+  );
+  const cheapestVisible = pricedVisibleSpots[0] ?? null;
   const averageVisiblePrice =
-    filteredVisibleSpots.reduce((total, spot) => total + spot.price, 0) /
-      (filteredVisibleSpots.length || 1);
+    pricedVisibleSpots.reduce((total, spot) => total + spot.price, 0) /
+      (pricedVisibleSpots.length || 1);
   const visibleCities = new Set(filteredVisibleSpots.map((spot) => spot.city)).size;
 
   function syncVisibleSpots(map) {
@@ -173,7 +248,7 @@ function App() {
       return;
     }
 
-    mapInstanceRef.current.fitBounds(swissBounds, {
+    mapInstanceRef.current.fitBounds(datasetBounds, {
       padding: {
         top: 110,
         right: sidebarOpen ? 430 : 32,
@@ -218,7 +293,7 @@ function App() {
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/standard",
-        bounds: swissBounds,
+        bounds: datasetBounds,
         fitBoundsOptions: {
           padding: {
             top: 110,
@@ -227,7 +302,6 @@ function App() {
             left: 32,
           },
         },
-        maxBounds: swissBounds,
         attributionControl: false,
         pitch: 0,
         bearing: 0,
@@ -272,9 +346,9 @@ function App() {
         markerNode.className = "custom-marker";
         markerNode.setAttribute(
           "aria-label",
-          `${spot.name} in ${spot.city} for ${numberFormat.format(spot.price)}`,
+          `${spot.name} in ${spot.city} for ${formatPrice(spot.price)}`,
         );
-        markerNode.innerHTML = `<strong>${numberFormat.format(spot.price)}</strong>`;
+        markerNode.innerHTML = `<strong>${formatMarkerPrice(spot.price)}</strong>`;
 
         const marker = new mapboxgl.Marker({
           element: markerNode,
@@ -338,7 +412,7 @@ function App() {
     }
 
     return undefined;
-  }, [spots]);
+  }, [spots, datasetBounds]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !mapReady) {
@@ -479,7 +553,11 @@ function App() {
         </div>
         <div className="stat-pill">
           <span>Average</span>
-          <strong>{numberFormat.format(averageVisiblePrice || 0)}</strong>
+          <strong>
+            {pricedVisibleSpots.length
+              ? numberFormat.format(averageVisiblePrice || 0)
+              : "None"}
+          </strong>
         </div>
       </div>
 
@@ -503,6 +581,11 @@ function App() {
         <div className="sidebar-scroll">
           {loading ? (
             <div className="empty-card">Loading venues…</div>
+          ) : loadError ? (
+            <div className="empty-card">
+              <strong>Venue data unavailable.</strong>
+              <p>{loadError}</p>
+            </div>
           ) : visibleSpots.length === 0 ? (
             <div className="empty-card">
               Move the map to bring bars and restaurants into view.
@@ -523,7 +606,7 @@ function App() {
                   <div className="result-main">
                     <div className="result-topline">
                       <h4>{spot.name}</h4>
-                      <strong>{numberFormat.format(spot.price)}</strong>
+                      <strong>{formatPrice(spot.price)}</strong>
                     </div>
                     <p>
                       {spot.city}, {spot.canton} · {spot.beer}
