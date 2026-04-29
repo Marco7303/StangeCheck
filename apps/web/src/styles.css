@@ -1,16 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Syne:wght@500;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap");
 
 :root {
   color-scheme: light;
   --bg: #ece7dd;
-  --surface: rgba(255, 252, 247, 0.8);
-  --surface-strong: rgba(255, 252, 247, 0.92);
-  --surface-soft: rgba(255, 252, 247, 0.68);
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-soft: #fbefec;
   --text: #141414;
   --muted: #6b665f;
   --line: rgba(20, 20, 20, 0.08);
   --accent: #c55b38;
   --accent-soft: rgba(197, 91, 56, 0.12);
+  --accent-line: rgba(197, 91, 56, 0.32);
   --shadow: 0 22px 50px rgba(0, 0, 0, 0.14);
 }
 
@@ -40,7 +41,7 @@ body,
 
 body {
   margin: 0;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Montserrat", sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -121,7 +122,9 @@ button {
 .overlay-label {
   margin: 0 0 4px;
   color: var(--muted);
+  font-family: "Montserrat", sans-serif;
   font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -131,8 +134,13 @@ button {
 .result-topline h4,
 .result-rank,
 .stat-pill strong,
-.selected-head strong {
-  font-family: "Syne", sans-serif;
+.selected-head strong,
+.sidebar-count,
+.custom-marker strong,
+.info-window strong,
+.control-button {
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .search-shell {
@@ -154,10 +162,11 @@ button {
 
 .search-shell input {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-soft);
+  border: 1px solid var(--accent-line);
+  background: transparent;
   color: var(--text);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
   padding: 14px 16px;
   outline: none;
   transition: border-color 160ms ease, background 160ms ease;
@@ -168,8 +177,8 @@ button {
 }
 
 .search-shell input:focus {
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
-  background: var(--surface-strong);
+  border-color: var(--accent);
+  background: transparent;
 }
 
 .topbar-actions {
@@ -181,11 +190,13 @@ button {
 }
 
 .control-button {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-soft);
+  border: 1px solid var(--accent-line);
+  background: transparent;
   color: var(--text);
   padding: 12px 14px;
+  font-size: 0.96rem;
+  line-height: 1;
+  text-transform: uppercase;
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
@@ -198,7 +209,8 @@ button {
 }
 
 .control-button.is-primary {
-  background: var(--accent-soft);
+  background: transparent;
+  border-color: var(--accent);
   color: var(--text);
 }
 
@@ -213,26 +225,27 @@ button {
   padding: 10px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 22px;
   box-shadow: var(--shadow);
 }
 
 .stat-pill {
   padding: 10px 12px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--accent-line);
+  background: transparent;
 }
 
 .stat-pill span {
   display: block;
   color: var(--muted);
   font-size: 0.76rem;
+  font-weight: 600;
   margin-bottom: 6px;
 }
 
 .stat-pill strong {
-  font-size: 1rem;
+  font-size: 1.08rem;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .map-fallback {
@@ -242,7 +255,6 @@ button {
   background: rgba(10, 10, 10, 0.56);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
-  border-radius: 18px;
 }
 
 .map-fallback {
@@ -270,7 +282,6 @@ button {
   padding: 14px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 24px;
   box-shadow: var(--shadow);
   transition: transform 220ms ease, opacity 220ms ease;
 }
@@ -294,7 +305,10 @@ button {
 }
 
 .floating-sidebar h2 {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .sidebar-count {
@@ -302,21 +316,24 @@ button {
   height: 44px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: var(--accent-soft);
+  background: transparent;
+  border: 1px solid var(--accent-line);
   color: var(--text);
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .empty-card,
 .result-card {
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  border: 1px solid var(--accent-line);
 }
 .result-main p,
 .result-main small {
   margin: 6px 0 0;
   color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
   line-height: 1.42;
 }
 
@@ -338,7 +355,7 @@ button {
   padding: 13px;
   text-align: left;
   cursor: pointer;
-  background: var(--surface-soft);
+  background: transparent;
   color: var(--text);
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
@@ -355,12 +372,16 @@ button {
 }
 
 .result-topline strong {
-  font-size: 0.98rem;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .empty-card {
   padding: 16px;
-  background: var(--surface-soft);
+  background: transparent;
   color: var(--muted);
 }
 
@@ -370,9 +391,8 @@ button {
   justify-content: center;
   min-width: 0;
   padding: 9px 14px 10px;
-  border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--line) 78%, white 14%);
-  background: color-mix(in srgb, var(--surface-strong) 92%, white 8%);
+  background: #ffffff;
   color: var(--text);
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.16),
@@ -387,15 +407,16 @@ button {
 }
 
 .custom-marker strong {
-  font-family: "Syne", sans-serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.03em;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .custom-marker.is-visible {
-  background: color-mix(in srgb, var(--accent-soft) 28%, var(--surface-strong));
+  background: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
 }
 
@@ -413,9 +434,9 @@ button {
 
 .mapboxgl-popup-content {
   padding: 0;
-  border-radius: 18px;
-  background: var(--surface-strong);
+  background: #ffffff;
   color: var(--text);
+  border-radius: 0 !important;
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -427,24 +448,24 @@ button {
 .mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
 .mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
 .mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
-  border-bottom-color: var(--surface-strong) !important;
+  border-bottom-color: #ffffff !important;
   border-top: none;
 }
 
 .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
 .mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
 .mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
-  border-top-color: var(--surface-strong) !important;
+  border-top-color: #ffffff !important;
   border-bottom: none;
 }
 
 .mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
-  border-right-color: var(--surface-strong) !important;
+  border-right-color: #ffffff !important;
   border-left: none;
 }
 
 .mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
-  border-left-color: var(--surface-strong) !important;
+  border-left-color: #ffffff !important;
   border-right: none;
 }
 
@@ -455,7 +476,6 @@ button {
 }
 
 .mapboxgl-ctrl-group {
-  border-radius: 16px !important;
   overflow: hidden;
   box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18) !important;
   position: relative;
@@ -473,6 +493,7 @@ button {
   min-width: 244px;
   max-width: 280px;
   padding: 14px 14px 15px;
+  border-radius: 0;
 }
 
 .info-window-head {
@@ -486,13 +507,16 @@ button {
   margin: 0 0 5px;
   color: var(--muted);
   font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .info-window strong {
-  font-family: "Syne", sans-serif;
-  font-size: 1.02rem;
+  font-size: 1.18rem;
+  font-weight: 600;
+  line-height: 1.05;
+  text-transform: uppercase;
 }
 
 .info-window-meta {
@@ -502,7 +526,7 @@ button {
 .info-window-meta {
   color: var(--text);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.01em;
 }
 
@@ -519,12 +543,13 @@ button {
   justify-content: center;
   min-height: 40px;
   padding: 0 14px;
-  border-radius: 12px;
   background: var(--text);
   color: var(--bg);
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-decoration: none;
+  text-transform: uppercase;
   transition: transform 160ms ease, opacity 160ms ease;
 }
 
@@ -567,7 +592,6 @@ button {
     bottom: 12px;
     width: auto;
     max-height: 56vh;
-    border-radius: 22px;
   }
 
   .floating-sidebar.is-hidden {
