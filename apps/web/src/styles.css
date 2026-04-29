@@ -324,8 +324,8 @@ button {
 
 .sidebar-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 14px;
 }
 
@@ -343,12 +343,18 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+  align-self: flex-end;
 }
 
 .sidebar-close:hover {
   border-color: var(--accent);
   background: #da042c;
   color: #ffffff;
+}
+
+.sidebar-ad-placeholder {
+  min-height: 120px;
+  background: #da042c;
 }
 
 .floating-sidebar h2,

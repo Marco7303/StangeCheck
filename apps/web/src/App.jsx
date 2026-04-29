@@ -530,9 +530,6 @@ function App() {
           className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}
         >
           <div className="sidebar-top">
-            <div>
-              <h2>{filteredVisibleSpots.length} Prices found</h2>
-            </div>
             <button
               type="button"
               className="sidebar-close"
@@ -541,6 +538,10 @@ function App() {
             >
               X
             </button>
+            <div className="sidebar-ad-placeholder" aria-hidden="true" />
+            <div>
+              <h2>{filteredVisibleSpots.length} Prices found</h2>
+            </div>
           </div>
 
           <div className="sidebar-scroll">
