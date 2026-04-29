@@ -432,10 +432,11 @@ function App() {
     markersRef.current.forEach(({ marker, node }, markerId) => {
       node.classList.toggle("is-selected", markerId === selectedVisibleSpot?.id);
       node.classList.toggle("is-visible", visibleIds.includes(markerId));
+      node.classList.toggle("is-cheapest", markerId === cheapestVisible?.id);
       marker.getElement().style.zIndex =
-        markerId === selectedVisibleSpot?.id ? "14" : "10";
+        markerId === selectedVisibleSpot?.id ? "14" : markerId === cheapestVisible?.id ? "12" : "10";
     });
-  }, [selectedVisibleSpot, visibleIds]);
+  }, [selectedVisibleSpot, visibleIds, cheapestVisible]);
 
   useEffect(() => {
     if (!selectedVisibleSpot || !mapInstanceRef.current || !popupRef.current) {
@@ -600,7 +601,7 @@ function App() {
                 <button
                   key={spot.id}
                   type="button"
-                  className="result-card"
+                  className={`result-card ${spot.id === cheapestVisible?.id ? "is-cheapest" : ""}`.trim()}
                   onClick={() => focusSpot(spot)}
                 >
                   <div className="result-main">

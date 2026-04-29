@@ -360,6 +360,11 @@ button {
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+.result-card.is-cheapest {
+  border-width: 2px;
+  border-color: var(--accent);
+}
+
 .result-main {
   min-width: 0;
 }
@@ -420,12 +425,26 @@ button {
   border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
 }
 
+.custom-marker.is-cheapest {
+  background: #ffffff;
+  border-color: #da042c;
+  border-width: 2px;
+  color: var(--text);
+}
+
 .custom-marker.is-selected {
   transform: translateY(-1px) scale(1.06);
-  background: var(--text);
-  color: var(--bg);
-  border-color: color-mix(in srgb, var(--text) 82%, var(--accent) 18%);
+  background: #da042c;
+  color: #ffffff;
+  border-color: #da042c;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+}
+
+.custom-marker.is-selected.is-cheapest {
+  background: #da042c;
+  color: #ffffff;
+  border-color: #da042c;
+  border-width: 2px;
 }
 
 .mapboxgl-popup {
@@ -543,8 +562,8 @@ button {
   justify-content: center;
   min-height: 40px;
   padding: 0 14px;
-  background: var(--text);
-  color: var(--bg);
+  background: #da042c;
+  color: #ffffff;
   font-size: 0.88rem;
   font-weight: 500;
   letter-spacing: 0.04em;
