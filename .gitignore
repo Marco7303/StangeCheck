@@ -1,4 +1,6 @@
 node_modules/
+.venv/
+*/.venv/
 dist/
 .cache/
 .parcel-cache/
@@ -58,3 +60,6 @@ playwright-report/
 test-results/
 
 *.local
+
+__pycache__/
+*.pyc

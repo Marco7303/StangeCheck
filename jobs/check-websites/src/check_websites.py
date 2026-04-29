@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import time
+import unicodedata
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +55,8 @@ MAX_BLOCK_TEXT_CHARS = 3000
 SCROLL_STEPS = 6
 SCROLL_PAUSE_SECONDS = 0.35
 REQUEST_TIMEOUT_SECONDS = 20
+DEBUG_ARTIFACTS_ENABLED = os.environ.get("CHECK_WEBSITES_DEBUG", "1") != "0"
+DEBUG_ARTIFACTS_ROOT = REPO_ROOT / "jobs" / "check-websites" / "debug"
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -162,10 +165,8 @@ LAGER_TERMS = [
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 PDF_EXTENSIONS = {".pdf"}
 WHITESPACE_PATTERN = re.compile(r"[ \t]+")
-PRICE_PATTERN = re.compile(
-    r"(?P<price>\d{1,2}(?:[.,]\d{1,2})?)\s*(?:chf|fr\.?|franken)\b",
-    re.IGNORECASE,
-)
+PRICE_PATTERN = re.compile(r"(?P<price>\d{1,2}(?:[.,]\d{1,2})?)\s*(?:chf|fr\.?|franken)\b", re.IGNORECASE)
+BARE_PRICE_PATTERN = re.compile(r"\b(?P<price>\d{1,2}(?:[.,]\d{1,2})?)\b")
 VOLUME_PATTERN = re.compile(
     r"\b(?:0[.,]5\s*l|5\s*dl|50\s*cl|500\s*ml)\b",
     re.IGNORECASE,
@@ -204,12 +205,64 @@ class PriceCandidate:
     source_url: str
 
 
+@dataclass
+class CrawlResult:
+    html_documents: list[HtmlDocument]
+    pdf_urls: list[str]
+    image_urls: list[str]
+    errors: list[str]
+    debug: dict
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
 def normalize_inline(value: str) -> str:
     return WHITESPACE_PATTERN.sub(" ", value).strip()
+
+
+def slugify(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    ascii_value = normalized.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", ascii_value.lower()).strip("-")
+    return slug or "venue"
+
+
+def ensure_debug_dir(venue: dict) -> Path:
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    slug = slugify(venue.get("name") or "venue")
+    venue_id = str(venue.get("id") or "unknown")
+    path = DEBUG_ARTIFACTS_ROOT / f"{timestamp}-{slug}-{venue_id}"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def write_debug_text(debug_dir: Path, relative_path: str, content: str) -> None:
+    path = debug_dir / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def write_debug_json(debug_dir: Path, relative_path: str, payload: dict | list) -> None:
+    write_debug_text(
+        debug_dir,
+        relative_path,
+        json.dumps(payload, indent=2, ensure_ascii=False),
+    )
+
+
+def serialize_price_candidates(candidates: list[PriceCandidate]) -> list[dict]:
+    return [
+        {
+            "beer_name": candidate.beer_name,
+            "price_chf": candidate.price_chf,
+            "volume_l": candidate.volume_l,
+            "evidence": candidate.evidence,
+            "source_url": candidate.source_url,
+        }
+        for candidate in candidates
+    ]
 
 
 def append_note(existing: str | None, message: str | None) -> str | None:
@@ -245,8 +298,16 @@ def strip_fragment(url: str) -> str:
     return url.split("#", 1)[0]
 
 
-def same_host(left: str, right: str) -> bool:
-    return urlparse(left).netloc.lower() == urlparse(right).netloc.lower()
+def site_family(host: str) -> str:
+    host = host.lower().split(":", 1)[0]
+    parts = [part for part in host.split(".") if part]
+    if len(parts) <= 2:
+        return host
+    return ".".join(parts[-2:])
+
+
+def same_site_family(left: str, right: str) -> bool:
+    return site_family(urlparse(left).netloc) == site_family(urlparse(right).netloc)
 
 
 def classify_asset(url: str) -> str:
@@ -268,10 +329,17 @@ def keyword_score(text: str) -> int:
 def url_priority(url: str) -> int:
     kind = classify_asset(url)
     base = keyword_score(url)
+    lowered_path = urlparse(url).path.lower()
     if kind == "pdf":
         base += 4
     elif kind == "image":
         base += 3
+    if any(term in lowered_path for term in ["/menu", "/bier", "/beer", "/drinks", "/getraenke", "/getränke", "/barkarte", "/speisekarte"]):
+        base += 8
+    if any(term in lowered_path for term in ["/category/", "/tag/", "/author/", "/page/"]):
+        base -= 6
+    if re.search(r"/20\d{2}/\d{2}/", lowered_path):
+        base -= 8
     return base
 
 
@@ -528,7 +596,7 @@ def merge_snapshot_assets(
                 absolute = strip_fragment(urljoin(url, link))
                 kind = classify_asset(absolute)
                 score = block.get("score", 0) + url_priority(absolute) + 2
-                if kind == "html" and same_host(url, absolute):
+                if kind == "html" and same_site_family(url, absolute):
                     html_candidates[absolute] = max(html_candidates.get(absolute, 0), score)
                 elif kind == "pdf":
                     pdf_candidates[absolute] = max(pdf_candidates.get(absolute, 0), score)
@@ -555,7 +623,7 @@ def merge_snapshot_assets(
                 continue
             kind = classify_asset(href)
             score = int(link.get("score", 0)) + url_priority(href)
-            if kind == "html" and same_host(url, href):
+            if kind == "html" and same_site_family(url, href):
                 html_candidates[href] = max(html_candidates.get(href, 0), score)
             elif kind == "pdf":
                 pdf_candidates[href] = max(pdf_candidates.get(href, 0), score)
@@ -570,7 +638,7 @@ def merge_snapshot_assets(
             image_candidates[src] = max(image_candidates.get(src, 0), score)
 
 
-def crawl_site(start_url: str) -> tuple[list[HtmlDocument], list[str], list[str], list[str]]:
+def crawl_site(start_url: str) -> CrawlResult:
     documents: list[HtmlDocument] = []
     errors: list[str] = []
     html_candidates: dict[str, int] = {}
@@ -578,6 +646,7 @@ def crawl_site(start_url: str) -> tuple[list[HtmlDocument], list[str], list[str]
     image_candidates: dict[str, int] = {}
     visited_html: set[str] = set()
     queue: list[CrawlTask] = [CrawlTask(url=start_url, depth=0, priority=100)]
+    visit_order: list[dict] = []
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
@@ -603,6 +672,14 @@ def crawl_site(start_url: str) -> tuple[list[HtmlDocument], list[str], list[str]
                 if final_url in visited_html:
                     continue
                 visited_html.add(final_url)
+                visit_order.append(
+                    {
+                        "requested_url": target_url,
+                        "final_url": final_url,
+                        "depth": task.depth,
+                        "priority": task.priority,
+                    }
+                )
                 print(f"[FETCH_HTML] {final_url}")
                 merge_snapshot_assets(final_url, snapshots, html_candidates, pdf_candidates, image_candidates, documents)
 
@@ -643,7 +720,31 @@ def crawl_site(start_url: str) -> tuple[list[HtmlDocument], list[str], list[str]
         seen.add(key)
         deduped_documents.append(document)
 
-    return deduped_documents, pdf_urls, image_urls, errors
+    ranked_html = sorted(html_candidates.items(), key=lambda item: item[1], reverse=True)
+    debug = {
+        "start_url": start_url,
+        "visited_pages": visit_order,
+        "ranked_html_candidates": [
+            {"url": url, "score": score} for url, score in ranked_html
+        ],
+        "ranked_pdf_candidates": [
+            {"url": url, "score": score} for url, score in ranked_pdfs
+        ],
+        "ranked_image_candidates": [
+            {"url": url, "score": score} for url, score in ranked_images
+        ],
+        "selected_pdf_urls": pdf_urls,
+        "selected_image_urls": image_urls,
+        "crawl_errors": errors,
+    }
+
+    return CrawlResult(
+        html_documents=deduped_documents,
+        pdf_urls=pdf_urls,
+        image_urls=image_urls,
+        errors=errors,
+        debug=debug,
+    )
 
 
 def extract_pdf_text(content: bytes) -> str:
@@ -798,31 +899,52 @@ def guess_beer_name(snippet: str) -> str:
     return normalize_inline(snippet)[:80]
 
 
+def document_priority(document: ExtractedDocument) -> tuple[int, int]:
+    source_bonus = {"pdf": 3, "image": 2, "html": 1}.get(document.source_type, 0)
+    text_score = keyword_score(document.text[:4000]) + url_priority(document.source_url)
+    return (source_bonus, text_score)
+
+
 def extract_price_candidates(documents: list[ExtractedDocument]) -> list[PriceCandidate]:
     candidates: list[PriceCandidate] = []
 
     for document in documents:
-        for raw_line in document.text.splitlines():
-            line = raw_line.rstrip()
+        lines = [raw_line.rstrip() for raw_line in document.text.splitlines()]
+        for index, line in enumerate(lines):
             if not line.strip():
                 continue
-            if not contains_lager_term(line):
+
+            window_lines = [entry for entry in lines[index : index + 3] if entry.strip()]
+            snippet = "\n".join(window_lines)
+            if not contains_lager_term(snippet):
                 continue
-            if not VOLUME_PATTERN.search(line):
+            if not VOLUME_PATTERN.search(snippet):
                 continue
-            match = PRICE_PATTERN.search(line)
-            if not match:
-                continue
-            price = parse_price(match.group("price"))
+
+            match = PRICE_PATTERN.search(snippet)
+            price = parse_price(match.group("price")) if match else None
             if price is None:
-                continue
+                volume_match = VOLUME_PATTERN.search(snippet)
+                trailing_text = snippet[volume_match.end() :] if volume_match else snippet
+                bare_prices = [
+                    parse_price(candidate.group("price"))
+                    for candidate in BARE_PRICE_PATTERN.finditer(trailing_text)
+                ]
+                bare_prices = [
+                    candidate
+                    for candidate in bare_prices
+                    if candidate is not None and 3.0 <= candidate <= 25.0
+                ]
+                if not bare_prices:
+                    continue
+                price = min(bare_prices)
 
             candidates.append(
                 PriceCandidate(
-                    beer_name=guess_beer_name(line),
+                    beer_name=guess_beer_name(snippet),
                     price_chf=price,
                     volume_l=0.5,
-                    evidence=line[:240],
+                    evidence=snippet[:240],
                     source_url=document.source_url,
                 )
             )
@@ -852,11 +974,36 @@ def choose_clear_candidate(candidates: list[PriceCandidate]) -> PriceCandidate |
 
 
 def build_combined_text(documents: list[ExtractedDocument]) -> str:
+    chunks: list[str] = []
+    total_chars = 0
+    ranked_documents = sorted(
+        (document for document in documents if document.text),
+        key=document_priority,
+        reverse=True,
+    )
+
+    for document in ranked_documents:
+        chunk = f"[{document.source_type.upper()}: {document.source_url}]\n{document.text}"
+        if total_chars + len(chunk) <= MAX_MODEL_TEXT_CHARS:
+            chunks.append(chunk)
+            total_chars += len(chunk) + 2
+            continue
+
+        remaining = MAX_MODEL_TEXT_CHARS - total_chars
+        if remaining <= 200:
+            break
+        chunks.append(chunk[:remaining])
+        break
+
+    return "\n\n".join(chunks)
+
+
+def build_documents_dump(documents: list[ExtractedDocument]) -> str:
     chunks = []
     for document in documents:
-        if not document.text:
-            continue
-        chunks.append(f"[{document.source_type.upper()}: {document.source_url}]\n{document.text[:5000]}")
+        chunks.append(
+            f"[{document.source_type.upper()}: {document.source_url}]\n{document.text or ''}"
+        )
     return "\n\n".join(chunks)
 
 
@@ -989,10 +1136,15 @@ def main():
     for venue in venues:
         checked += 1
         website = normalize_url(venue["website"])
+        debug_dir = ensure_debug_dir(venue) if DEBUG_ARTIFACTS_ENABLED else None
         log_venue(venue, "CHECKING")
 
         try:
-            html_docs, pdf_urls, image_urls, crawl_errors = crawl_site(website)
+            crawl_result = crawl_site(website)
+            html_docs = crawl_result.html_documents
+            pdf_urls = crawl_result.pdf_urls
+            image_urls = crawl_result.image_urls
+            crawl_errors = crawl_result.errors
             extracted_docs, extraction_errors = build_extracted_documents(
                 session,
                 html_docs,
@@ -1004,7 +1156,50 @@ def main():
 
             all_errors = crawl_errors + extraction_errors
 
+            if debug_dir:
+                write_debug_json(
+                    debug_dir,
+                    "summary.json",
+                    {
+                        "venue_id": venue.get("id"),
+                        "venue_name": venue.get("name"),
+                        "website": website,
+                    },
+                )
+                write_debug_json(debug_dir, "crawl.json", crawl_result.debug)
+                write_debug_json(
+                    debug_dir,
+                    "extraction.json",
+                    {
+                        "html_document_count": len(html_docs),
+                        "pdf_url_count": len(pdf_urls),
+                        "image_url_count": len(image_urls),
+                        "extracted_document_count": len(extracted_docs),
+                        "crawl_errors": crawl_errors,
+                        "extraction_errors": extraction_errors,
+                    },
+                )
+                write_debug_text(
+                    debug_dir,
+                    "texts/extracted_documents.txt",
+                    build_documents_dump(extracted_docs),
+                )
+                write_debug_text(
+                    debug_dir,
+                    "texts/combined_text.txt",
+                    combined_text,
+                )
+
             if not normalize_inline(combined_text):
+                if debug_dir:
+                    write_debug_json(
+                        debug_dir,
+                        "result.json",
+                        {
+                            "status": "checked_no_text",
+                            "reason": None,
+                        },
+                    )
                 update_venue(
                     venue["id"],
                     {
@@ -1021,7 +1216,29 @@ def main():
             candidates = extract_price_candidates(extracted_docs)
             clear_candidate = choose_clear_candidate(candidates)
 
+            if debug_dir:
+                write_debug_json(
+                    debug_dir,
+                    "regex_candidates.json",
+                    serialize_price_candidates(candidates),
+                )
+
             if clear_candidate:
+                if debug_dir:
+                    write_debug_json(
+                        debug_dir,
+                        "result.json",
+                        {
+                            "status": "checked_price_found_regex",
+                            "candidate": {
+                                "beer_name": clear_candidate.beer_name,
+                                "price_chf": clear_candidate.price_chf,
+                                "volume_l": clear_candidate.volume_l,
+                                "evidence": clear_candidate.evidence,
+                                "source_url": clear_candidate.source_url,
+                            },
+                        },
+                    )
                 update_venue(
                     venue["id"],
                     {
@@ -1048,6 +1265,8 @@ def main():
             model_result = run_extraction_model(venue, combined_text)
             model_ok = False
             rejection_reason = None
+            if debug_dir and model_result is not None:
+                write_debug_json(debug_dir, "model_result.json", model_result)
             if model_result:
                 model_ok, rejection_reason = validate_model_result(
                     model_result,
@@ -1056,6 +1275,15 @@ def main():
                 )
 
             if model_result and model_ok:
+                if debug_dir:
+                    write_debug_json(
+                        debug_dir,
+                        "result.json",
+                        {
+                            "status": "checked_price_found_model",
+                            "model_result": model_result,
+                        },
+                    )
                 update_venue(
                     venue["id"],
                     {
@@ -1090,6 +1318,19 @@ def main():
             if not reason and all_errors:
                 reason = all_errors[0]
 
+            if debug_dir:
+                write_debug_json(
+                    debug_dir,
+                    "result.json",
+                    {
+                        "status": "checked_no_price",
+                        "reason": reason,
+                        "validation_rejection_reason": rejection_reason,
+                        "crawl_errors": crawl_errors,
+                        "extraction_errors": extraction_errors,
+                    },
+                )
+
             update_venue(
                 venue["id"],
                 {
@@ -1104,6 +1345,15 @@ def main():
             log_venue(venue, "NO_PRICE", reason)
 
         except requests.RequestException as error:
+            if debug_dir:
+                write_debug_json(
+                    debug_dir,
+                    "result.json",
+                    {
+                        "status": "website_unreachable",
+                        "reason": str(error),
+                    },
+                )
             update_venue(
                 venue["id"],
                 {
@@ -1117,6 +1367,15 @@ def main():
             unreachable += 1
             log_venue(venue, "UNREACHABLE", str(error))
         except Exception as error:
+            if debug_dir:
+                write_debug_json(
+                    debug_dir,
+                    "result.json",
+                    {
+                        "status": "error",
+                        "reason": str(error),
+                    },
+                )
             errors += 1
             log_venue(venue, "ERROR", str(error))
 

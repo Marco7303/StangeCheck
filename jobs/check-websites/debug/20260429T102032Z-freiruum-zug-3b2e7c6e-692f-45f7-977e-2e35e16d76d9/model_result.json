@@ -1,0 +1,10 @@
+{
+  "found": false,
+  "beer_name": null,
+  "price": null,
+  "currency": null,
+  "volume_l": null,
+  "evidence": null,
+  "source_url": null,
+  "reason": "No provided text contains a Getränkekarte, price list, or clear offer linking a 0.5L (or equivalent) lager/draft beer from Schützengarten (the brewery mentioned) to a volume and price. No evidence of specific prices or volumes for beer products shown; only generic references found."
+}
