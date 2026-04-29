@@ -6,6 +6,8 @@ import {
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
+import logoDark from "./assets/logo-dark.svg";
+import logoLight from "./assets/logo-light.svg";
 import { listVenues } from "./lib/venues";
 
 const numberFormat = new Intl.NumberFormat("de-CH", {
@@ -489,13 +491,11 @@ function App() {
 
       <header className="floating-topbar">
         <div className="brand">
-          <div className="brand-mark" aria-hidden="true">
-            <span />
-          </div>
-          <div>
-            <p className="brand-kicker">Switzerland</p>
-            <h1>Stange Check</h1>
-          </div>
+          <img
+            className="brand-logo"
+            src={theme === "dark" ? logoDark : logoLight}
+            alt="Stange Check"
+          />
         </div>
 
         <form className="search-shell" onSubmit={handleSearchSubmit}>
