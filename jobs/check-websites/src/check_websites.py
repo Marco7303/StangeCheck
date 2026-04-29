@@ -321,6 +321,19 @@ def classify_asset(url: str) -> str:
     return "html"
 
 
+def should_skip_image_url(page_url: str, image_url: str) -> bool:
+    parsed = urlparse(image_url)
+    path = parsed.path.lower()
+    host = parsed.netloc.lower()
+    if path.endswith(".svg"):
+        return True
+    if "emoji" in path:
+        return True
+    if not same_site_family(page_url, image_url):
+        return True
+    return False
+
+
 def keyword_score(text: str) -> int:
     lowered = text.lower()
     return sum(1 for keyword in KEYWORDS if keyword in lowered)
@@ -340,6 +353,11 @@ def url_priority(url: str) -> int:
         base -= 6
     if re.search(r"/20\d{2}/\d{2}/", lowered_path):
         base -= 8
+    filename = Path(lowered_path).name
+    if any(term in filename for term in ["bier", "beer", "cider", "menu", "karte", "drinks", "getraenke", "getränke"]):
+        base += 6
+    if any(term in filename for term in ["logo", "team", "banner", "hero", "award", "winner", "emoji"]):
+        base -= 6
     return base
 
 
@@ -605,9 +623,11 @@ def merge_snapshot_assets(
 
             for image in block.get("images", []):
                 absolute = strip_fragment(urljoin(url, image))
+                if should_skip_image_url(url, absolute):
+                    continue
                 image_candidates[absolute] = max(
                     image_candidates.get(absolute, 0),
-                    block.get("score", 0) + url_priority(absolute) + 2,
+                    block.get("score", 0) + url_priority(absolute) + url_priority(url) + 6,
                 )
 
         combined_text = body_text
@@ -634,7 +654,9 @@ def merge_snapshot_assets(
             src = strip_fragment(image.get("url") or "")
             if not src:
                 continue
-            score = int(image.get("score", 0)) + url_priority(src)
+            if should_skip_image_url(url, src):
+                continue
+            score = int(image.get("score", 0)) + url_priority(src) + max(url_priority(url), 0)
             image_candidates[src] = max(image_candidates.get(src, 0), score)
 
 
@@ -889,7 +911,14 @@ def parse_price(value: str) -> float | None:
 
 
 def format_price_variants(value: float) -> tuple[str, str]:
-    return (f"{value:.2f}", f"{value:.2f}".replace(".", ","))
+    fixed = f"{value:.2f}"
+    trimmed = f"{value:g}"
+    return (
+        fixed,
+        fixed.replace(".", ","),
+        trimmed,
+        trimmed.replace(".", ","),
+    )
 
 
 def guess_beer_name(snippet: str) -> str:
@@ -897,6 +926,23 @@ def guess_beer_name(snippet: str) -> str:
     if segments:
         return segments[0][:80].strip()
     return normalize_inline(snippet)[:80]
+
+
+def is_line_likely_beer_name(line: str) -> bool:
+    stripped = normalize_inline(line)
+    if not stripped:
+        return False
+    if contains_lager_term(stripped):
+        return True
+    return stripped.isupper() and any(char.isalpha() for char in stripped)
+
+
+def clean_beer_name(line: str) -> str:
+    name = normalize_inline(line)
+    name = re.sub(r"\b\d+(?:[.,]\d+)?\s*%\b", "", name)
+    name = re.sub(r"\b(?:0[.,]5\s*l|5\s*dl|50\s*cl|500\s*ml|30\s*cl|33\s*cl|35\s*cl|40\s*cl)\b", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"\b\d{1,2}(?:[.,]\d{1,2})?\b", "", name)
+    return normalize_inline(name)
 
 
 def document_priority(document: ExtractedDocument) -> tuple[int, int]:
@@ -913,19 +959,48 @@ def extract_price_candidates(documents: list[ExtractedDocument]) -> list[PriceCa
         for index, line in enumerate(lines):
             if not line.strip():
                 continue
+            if "flight" in line.lower():
+                continue
 
             window_lines = [entry for entry in lines[index : index + 3] if entry.strip()]
             snippet = "\n".join(window_lines)
             if not contains_lager_term(snippet):
                 continue
-            if not VOLUME_PATTERN.search(snippet):
+
+            direct_match = PRICE_PATTERN.search(snippet)
+            if direct_match and VOLUME_PATTERN.search(snippet):
+                price = parse_price(direct_match.group("price"))
+                if price is not None:
+                    candidates.append(
+                        PriceCandidate(
+                            beer_name=guess_beer_name(snippet),
+                            price_chf=price,
+                            volume_l=0.5,
+                            evidence=snippet[:240],
+                            source_url=document.source_url,
+                        )
+                    )
                 continue
 
-            match = PRICE_PATTERN.search(snippet)
-            price = parse_price(match.group("price")) if match else None
-            if price is None:
-                volume_match = VOLUME_PATTERN.search(snippet)
-                trailing_text = snippet[volume_match.end() :] if volume_match else snippet
+            if not is_line_likely_beer_name(line):
+                continue
+
+            beer_name = clean_beer_name(line)
+            if not beer_name or "flight" in beer_name.lower():
+                continue
+
+            next_lines = [entry for entry in lines[index + 1 : index + 3] if entry.strip()]
+            volume_line = next(
+                (entry for entry in [line] + next_lines if re.search(r"\b50\s*cl\b|\b5\s*dl\b|\b0[.,]5\s*l\b|\b500\s*ml\b", entry, re.IGNORECASE)),
+                None,
+            )
+            if not volume_line:
+                continue
+
+            price = None
+            volume_match = re.search(r"\b50\s*cl\b|\b5\s*dl\b|\b0[.,]5\s*l\b|\b500\s*ml\b", volume_line, re.IGNORECASE)
+            if volume_match:
+                trailing_text = volume_line[volume_match.end() :]
                 bare_prices = [
                     parse_price(candidate.group("price"))
                     for candidate in BARE_PRICE_PATTERN.finditer(trailing_text)
@@ -935,16 +1010,23 @@ def extract_price_candidates(documents: list[ExtractedDocument]) -> list[PriceCa
                     for candidate in bare_prices
                     if candidate is not None and 3.0 <= candidate <= 25.0
                 ]
-                if not bare_prices:
-                    continue
-                price = min(bare_prices)
+                if bare_prices:
+                    price = bare_prices[0]
+
+            if price is None:
+                continue
+
+            evidence_lines = [line]
+            if next_lines:
+                evidence_lines.extend(next_lines[:2])
+            evidence = "\n".join(evidence_lines)
 
             candidates.append(
                 PriceCandidate(
-                    beer_name=guess_beer_name(snippet),
+                    beer_name=beer_name,
                     price_chf=price,
                     volume_l=0.5,
-                    evidence=snippet[:240],
+                    evidence=evidence[:240],
                     source_url=document.source_url,
                 )
             )
@@ -1007,6 +1089,14 @@ def build_documents_dump(documents: list[ExtractedDocument]) -> str:
     return "\n\n".join(chunks)
 
 
+def build_source_text_map(documents: list[ExtractedDocument]) -> dict[str, str]:
+    return {
+        document.source_url: normalize_inline(document.text)
+        for document in documents
+        if document.text
+    }
+
+
 def build_extraction_prompt(venue: dict, combined_text: str) -> str:
     schema = {
         "found": "boolean",
@@ -1056,7 +1146,12 @@ def run_extraction_model(venue: dict, combined_text: str) -> dict | None:
     return json.loads(content)
 
 
-def validate_model_result(result: dict, combined_text: str, allowed_source_urls: set[str]) -> tuple[bool, str | None]:
+def validate_model_result(
+    result: dict,
+    combined_text: str,
+    allowed_source_urls: set[str],
+    source_text_map: dict[str, str],
+) -> tuple[bool, str | None]:
     if result.get("found") is not True:
         return False, "model returned found=false"
 
@@ -1081,20 +1176,29 @@ def validate_model_result(result: dict, combined_text: str, allowed_source_urls:
     if source_url not in allowed_source_urls:
         return False, "model source_url is not one of the gathered sources"
 
+    source_text = source_text_map.get(source_url, "")
+    if not source_text:
+        return False, "source text for model source_url is empty"
+
     normalized_dump = normalize_inline(combined_text)
     normalized_evidence = normalize_inline(evidence)
-    if normalized_evidence not in normalized_dump:
-        return False, "model evidence not found in gathered text"
+    if normalized_evidence not in normalized_dump and normalized_evidence not in source_text:
+        evidence_tokens = [token for token in re.split(r"\s+", normalized_evidence) if len(token) >= 3]
+        overlap = sum(1 for token in evidence_tokens if token.lower() in source_text.lower())
+        if overlap < max(2, min(5, len(evidence_tokens) // 2)):
+            return False, "model evidence not sufficiently grounded in source text"
 
-    if beer_name.lower() not in normalized_evidence.lower():
-        return False, "model evidence does not contain returned beer name"
+    if beer_name.lower() not in normalized_evidence.lower() and beer_name.lower() not in source_text.lower():
+        return False, "model beer name not found in source text"
 
-    if not VOLUME_PATTERN.search(normalized_evidence):
-        return False, "model evidence does not contain 0.5l volume"
+    if not VOLUME_PATTERN.search(normalized_evidence) and not VOLUME_PATTERN.search(source_text):
+        return False, "model source text does not contain 0.5l volume"
 
     price_variants = format_price_variants(float(price))
-    if not any(price_variant in normalized_evidence for price_variant in price_variants):
-        return False, "model evidence does not contain returned price"
+    if not any(price_variant in normalized_evidence for price_variant in price_variants) and not any(
+        price_variant in source_text for price_variant in price_variants
+    ):
+        return False, "model source text does not contain returned price"
 
     return True, None
 
@@ -1153,6 +1257,7 @@ def main():
             )
             combined_text = build_combined_text(extracted_docs)
             allowed_source_urls = {document.source_url for document in extracted_docs}
+            source_text_map = build_source_text_map(extracted_docs)
 
             all_errors = crawl_errors + extraction_errors
 
@@ -1272,6 +1377,7 @@ def main():
                     model_result,
                     combined_text,
                     allowed_source_urls,
+                    source_text_map,
                 )
 
             if model_result and model_ok:
