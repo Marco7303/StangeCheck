@@ -257,7 +257,7 @@ button {
 
 .floating-sidebar {
   position: absolute;
-  top: 92px;
+  top: 68px;
   right: 18px;
   bottom: 18px;
   width: min(380px, calc(100vw - 36px));
@@ -273,9 +273,53 @@ button {
 }
 
 .floating-sidebar.is-hidden {
-  transform: translateX(calc(100% + 24px));
+  transform: translateX(calc(100% + 10px));
   opacity: 0;
   pointer-events: none;
+}
+
+.sidebar-dock {
+  position: absolute;
+  top: 68px;
+  right: 0;
+  bottom: 18px;
+  z-index: 58;
+  pointer-events: none;
+}
+
+.sidebar-dock > * {
+  pointer-events: auto;
+}
+
+.sidebar-tab {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 12px 10px 12px 12px;
+  border: 1px solid var(--accent);
+  border-right: none;
+  background: #ffffff;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transition: transform 220ms ease, border-color 160ms ease;
+}
+
+.sidebar-tab:hover {
+  border-color: #da042c;
+}
+
+.sidebar-tab-label {
+  font-family: "Oswald", sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .sidebar-top {
@@ -283,6 +327,28 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
+}
+
+.sidebar-close {
+  border: 1px solid var(--accent-line);
+  background: transparent;
+  color: var(--text);
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.sidebar-close:hover {
+  border-color: var(--accent);
+  background: #da042c;
+  color: #ffffff;
 }
 
 .floating-sidebar h2,
@@ -602,6 +668,28 @@ button {
   .floating-sidebar.is-hidden {
     transform: translateY(calc(100% + 20px));
   }
+
+  .sidebar-dock {
+    top: auto;
+    left: 12px;
+    right: 0;
+    bottom: 12px;
+  }
+
+  .sidebar-tab {
+    top: auto;
+    right: 16px;
+    bottom: 100%;
+    transform: translateY(0);
+    writing-mode: horizontal-tb;
+    min-height: 0;
+    min-width: 120px;
+    justify-content: center;
+    padding: 10px 14px;
+    border-right: 1px solid var(--accent);
+    border-bottom: none;
+  }
+
 
   .map-fallback {
     left: 12px;

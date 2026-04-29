@@ -346,6 +346,7 @@ function App() {
         markerNode.addEventListener("click", (event) => {
           event.stopPropagation();
           setSelectedId(spot.id);
+          setSidebarOpen(true);
         });
 
         markersRef.current.set(spot.id, { marker, node: markerNode });
@@ -488,13 +489,6 @@ function App() {
           <button type="button" className="control-button" onClick={resetMapView}>
             Reset
           </button>
-          <button
-            type="button"
-            className="control-button is-primary"
-            onClick={() => setSidebarOpen((currentState) => !currentState)}
-          >
-            {sidebarOpen ? "Hide list" : "Show list"}
-          </button>
         </div>
       </header>
 
@@ -531,54 +525,77 @@ function App() {
         </div>
       ) : null}
 
-      <aside className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}>
-        <div className="sidebar-top">
-          <div>
-            <h2>{filteredVisibleSpots.length} Prices found</h2>
+      <div className="sidebar-dock">
+        <aside
+          className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}
+        >
+          <div className="sidebar-top">
+            <div>
+              <h2>{filteredVisibleSpots.length} Prices found</h2>
+            </div>
+            <button
+              type="button"
+              className="sidebar-close"
+              aria-label="Close prices sidebar"
+              onClick={() => setSidebarOpen(false)}
+            >
+              X
+            </button>
           </div>
-        </div>
 
-        <div className="sidebar-scroll">
-          {loading ? (
-            <div className="empty-card">Loading venues…</div>
-          ) : loadError ? (
-            <div className="empty-card">
-              <strong>Venue data unavailable.</strong>
-              <p>{loadError}</p>
-            </div>
-          ) : visibleSpots.length === 0 ? (
-            <div className="empty-card">
-              Move the map to bring bars and restaurants into view.
-            </div>
-          ) : filteredVisibleSpots.length === 0 ? (
-            <div className="empty-card">
-              No visible venues match your current search.
-            </div>
-          ) : (
-            <div className="results-list">
-              {filteredVisibleSpots.map((spot) => (
-                <button
-                  key={spot.id}
-                  type="button"
-                  className={`result-card ${spot.id === cheapestVisible?.id ? "is-cheapest" : ""}`.trim()}
-                  onClick={() => focusSpot(spot)}
-                >
-                  <div className="result-main">
-                    <div className="result-topline">
-                      <h4>{spot.name}</h4>
-                      <strong>{formatPrice(spot.price)}</strong>
+          <div className="sidebar-scroll">
+            {loading ? (
+              <div className="empty-card">Loading venues…</div>
+            ) : loadError ? (
+              <div className="empty-card">
+                <strong>Venue data unavailable.</strong>
+                <p>{loadError}</p>
+              </div>
+            ) : visibleSpots.length === 0 ? (
+              <div className="empty-card">
+                Move the map to bring bars and restaurants into view.
+              </div>
+            ) : filteredVisibleSpots.length === 0 ? (
+              <div className="empty-card">
+                No visible venues match your current search.
+              </div>
+            ) : (
+              <div className="results-list">
+                {filteredVisibleSpots.map((spot) => (
+                  <button
+                    key={spot.id}
+                    type="button"
+                    className={`result-card ${spot.id === cheapestVisible?.id ? "is-cheapest" : ""}`.trim()}
+                    onClick={() => focusSpot(spot)}
+                  >
+                    <div className="result-main">
+                      <div className="result-topline">
+                        <h4>{spot.name}</h4>
+                        <strong>{formatPrice(spot.price)}</strong>
+                      </div>
+                      <p>
+                        {spot.city}, {spot.canton} · {spot.beer}
+                      </p>
+                      <small>{spot.vibe}</small>
                     </div>
-                    <p>
-                      {spot.city}, {spot.canton} · {spot.beer}
-                    </p>
-                    <small>{spot.vibe}</small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {!sidebarOpen ? (
+          <button
+            type="button"
+            className="sidebar-tab"
+            aria-label="Show prices sidebar"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <span className="sidebar-tab-label">Prices</span>
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
