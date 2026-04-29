@@ -5,10 +5,12 @@ This job imports venue candidates from OSM/Overpass into Supabase.
 Current behavior:
 
 - query Overpass for Zug venues
-- filter `amenity=pub|bar|food_court|biergarten|nightclub`
+- filter `amenity=pub|bar|biergarten|nightclub`
 - include `brewery=*` venues
 - keep only venues that have a `name` and either an email or website
-- upsert valid venues into the `venues` table in Supabase
+- insert new venues into the `venues` table in Supabase
+- for existing venues, only update fields where OSM provides a non-empty changed value
+- leave existing stored values untouched when the incoming OSM value is empty
 
 ## Python setup
 

@@ -48,6 +48,7 @@ Optional overrides:
 OPENAI_MODEL=gpt-4.1
 OCR_FALLBACK_MODEL=gpt-4.1
 TESSERACT_LANG=deu+eng
+CHECK_WEBSITES_DEBUG=1
 ```
 
 Do not commit real secrets.
@@ -122,3 +123,4 @@ python src/check_websites.py
 - OCR is necessary because many menus are images or scanned PDFs.
 - One failing website should not stop the rest of the run.
 - The job stores short run context in `notes` and marks `website_checked_at` when a run completes.
+- Debug artifacts are written by default to `jobs/check-websites/debug/` unless `CHECK_WEBSITES_DEBUG=0`.

@@ -19,9 +19,9 @@ OVERPASS_QUERY = """
 area["boundary"="administrative"]["name"="Zug"]["admin_level"="8"]->.searchArea;
 
 (
-  node["amenity"~"^(pub|bar|food_court|biergarten|nightclub)$"](area.searchArea);
-  way["amenity"~"^(pub|bar|food_court|biergarten|nightclub)$"](area.searchArea);
-  relation["amenity"~"^(pub|bar|food_court|biergarten|nightclub)$"](area.searchArea);
+  node["amenity"~"^(pub|bar|biergarten|nightclub)$"](area.searchArea);
+  way["amenity"~"^(pub|bar|biergarten|nightclub)$"](area.searchArea);
+  relation["amenity"~"^(pub|bar|biergarten|nightclub)$"](area.searchArea);
 
   node["brewery"](area.searchArea);
   way["brewery"](area.searchArea);
@@ -30,6 +30,33 @@ area["boundary"="administrative"]["name"="Zug"]["admin_level"="8"]->.searchArea;
 
 out center tags;
 """
+
+
+def has_value(value) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, dict):
+        return bool(value)
+    if isinstance(value, list):
+        return bool(value)
+    return True
+
+
+def merge_row(existing: dict, incoming: dict) -> tuple[dict, bool]:
+    merged = dict(existing)
+    changed = False
+
+    for key, incoming_value in incoming.items():
+        if not has_value(incoming_value):
+            continue
+
+        if merged.get(key) != incoming_value:
+            merged[key] = incoming_value
+            changed = True
+
+    return merged, changed
 
 def build_address(tags: dict) -> str | None:
     parts = [
@@ -67,6 +94,8 @@ def main():
     elements = response.json().get("elements", [])
 
     inserted = 0
+    updated = 0
+    unchanged = 0
     skipped = 0
 
     for el in elements:
@@ -100,14 +129,40 @@ def main():
             "discovery_status": "discovered",
         }
 
-        supabase.table("venues").upsert(
-            row,
-            on_conflict="osm_type,osm_id",
-        ).execute()
+        existing_result = (
+            supabase.table("venues")
+            .select("*")
+            .eq("osm_type", row["osm_type"])
+            .eq("osm_id", row["osm_id"])
+            .limit(1)
+            .execute()
+        )
+        existing = existing_result.data[0] if existing_result.data else None
 
-        inserted += 1
+        if not existing:
+            supabase.table("venues").insert(row).execute()
+            inserted += 1
+            continue
 
-    print(f"Import finished. Inserted/updated: {inserted}. Skipped: {skipped}.")
+        merged_row, changed = merge_row(existing, row)
+
+        if not changed:
+            unchanged += 1
+            continue
+
+        (
+            supabase.table("venues")
+            .update(merged_row)
+            .eq("osm_type", row["osm_type"])
+            .eq("osm_id", row["osm_id"])
+            .execute()
+        )
+        updated += 1
+
+    print(
+        "Import finished. "
+        f"Inserted: {inserted}. Updated: {updated}. Unchanged: {unchanged}. Skipped: {skipped}."
+    )
 
 
 if __name__ == "__main__":

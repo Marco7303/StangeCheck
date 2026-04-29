@@ -1,0 +1,10 @@
+{
+  "found": false,
+  "beer_name": null,
+  "price": null,
+  "currency": null,
+  "volume_l": null,
+  "evidence": null,
+  "source_url": null,
+  "reason": "There is no menu text or price evidence for any 0.5L lager or beer in any of the provided content. No Barkarte or drink list with details or prices is present. No 0.5L/5dl beer is clearly mentioned."
+}

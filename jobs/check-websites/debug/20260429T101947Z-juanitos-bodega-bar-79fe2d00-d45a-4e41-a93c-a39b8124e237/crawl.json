@@ -1,0 +1,143 @@
+{
+  "start_url": "https://juanitos.ch",
+  "visited_pages": [
+    {
+      "requested_url": "https://juanitos.ch",
+      "final_url": "https://juanitos.ch/",
+      "depth": 0,
+      "priority": 100
+    },
+    {
+      "requested_url": "https://juanitos.ch/impressum",
+      "final_url": "https://juanitos.ch/impressum/",
+      "depth": 1,
+      "priority": 8
+    },
+    {
+      "requested_url": "https://juanitos.ch/reservation/",
+      "final_url": "https://juanitos.ch/reservation/",
+      "depth": 1,
+      "priority": 8
+    }
+  ],
+  "ranked_html_candidates": [
+    {
+      "url": "https://juanitos.ch/",
+      "score": 8
+    },
+    {
+      "url": "https://juanitos.ch/reservation/",
+      "score": 8
+    },
+    {
+      "url": "https://juanitos.ch/impressum",
+      "score": 8
+    }
+  ],
+  "ranked_pdf_candidates": [
+    {
+      "url": "https://www.juanitos.ch/files/Juanitos_Speisekarte.pdf",
+      "score": 15
+    },
+    {
+      "url": "https://www.juanitos.ch/files/Juanitos_Speisekarte_glutenfrei.pdf",
+      "score": 15
+    },
+    {
+      "url": "https://www.juanitos.ch/files/Wochenmenue_Juanitos.pdf",
+      "score": 14
+    },
+    {
+      "url": "https://www.juanitos.ch/files/Juanitos_Menue.pdf",
+      "score": 14
+    },
+    {
+      "url": "https://www.juanitos.ch/files/Juanitos_Menuevorschlaege.pdf",
+      "score": 14
+    }
+  ],
+  "ranked_image_candidates": [
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos_Logo.png",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_lunch-min.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_header02_cropped-min.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_faijtas2.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_cheese.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_chilli_1x1.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_cheese02.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_faijtas3.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_fajitas.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_nachos.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/juanitos-zug_gutschein-min.jpg",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Mezcalito_Logo.png",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/mexikaner.png",
+      "score": 11
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Puccini_Logo.svg",
+      "score": 8
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/weinsicht-logo.svg",
+      "score": 8
+    },
+    {
+      "url": "https://juanitos.ch/wp-content/uploads/Haddock_Logo_Hafenbeiz_Brunnen_RGB.svg",
+      "score": 8
+    }
+  ],
+  "selected_pdf_urls": [
+    "https://www.juanitos.ch/files/Juanitos_Speisekarte.pdf",
+    "https://www.juanitos.ch/files/Juanitos_Speisekarte_glutenfrei.pdf",
+    "https://www.juanitos.ch/files/Wochenmenue_Juanitos.pdf",
+    "https://www.juanitos.ch/files/Juanitos_Menue.pdf",
+    "https://www.juanitos.ch/files/Juanitos_Menuevorschlaege.pdf"
+  ],
+  "selected_image_urls": [
+    "https://juanitos.ch/wp-content/uploads/Juanitos_Logo.png",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_lunch-min.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_header02_cropped-min.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_faijtas2.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_cheese.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_chilli_1x1.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_cheese02.jpg",
+    "https://juanitos.ch/wp-content/uploads/Juanitos-Zug_faijtas3.jpg"
+  ],
+  "crawl_errors": []
+}
