@@ -6,6 +6,7 @@ Current behavior:
 
 - query Overpass for Zug venues
 - filter `amenity=pub|bar|biergarten|nightclub`
+- include `amenity=restaurant` with `bar=yes`
 - include `brewery=*` venues
 - keep only venues that have a `name` and either an email or website
 - insert new venues into the `venues` table in Supabase

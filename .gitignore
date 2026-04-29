@@ -63,3 +63,5 @@ test-results/
 
 __pycache__/
 *.pyc
+
+jobs/check-websites/debug/
