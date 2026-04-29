@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
-import logoDark from "./assets/logo-dark.svg";
 import logoLight from "./assets/logo-light.svg";
 import { listVenues } from "./lib/venues";
 
@@ -107,16 +106,6 @@ function buildDirectionsUrl(spot) {
 }
 
 function App() {
-  const [theme, setTheme] = useState(() => {
-    const storedTheme = window.localStorage.getItem("stange-check-theme");
-    if (storedTheme) {
-      return storedTheme;
-    }
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  });
   const [spots, setSpots] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -132,11 +121,6 @@ function App() {
   const markersRef = useRef(new Map());
   const popupRef = useRef(null);
   const visibleIdsRef = useRef([]);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("stange-check-theme", theme);
-  }, [theme]);
 
   useEffect(() => {
     let active = true;
@@ -309,7 +293,7 @@ function App() {
         bearing: 0,
         config: {
           basemap: {
-            lightPreset: theme === "dark" ? "night" : "day",
+            lightPreset: "day",
             showPointOfInterestLabels: false,
             showTransitLabels: false,
             show3dObjects: false,
@@ -417,18 +401,6 @@ function App() {
   }, [spots, datasetBounds]);
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !mapReady) {
-      return;
-    }
-
-    mapInstanceRef.current.setConfigProperty(
-      "basemap",
-      "lightPreset",
-      theme === "dark" ? "night" : "day",
-    );
-  }, [theme, mapReady]);
-
-  useEffect(() => {
     markersRef.current.forEach(({ marker, node }, markerId) => {
       node.classList.toggle("is-selected", markerId === selectedVisibleSpot?.id);
       node.classList.toggle("is-visible", visibleIds.includes(markerId));
@@ -494,7 +466,7 @@ function App() {
         <div className="brand">
           <img
             className="brand-logo"
-            src={theme === "dark" ? logoDark : logoLight}
+            src={logoLight}
             alt="Stange Check"
           />
         </div>
@@ -515,17 +487,6 @@ function App() {
         <div className="topbar-actions">
           <button type="button" className="control-button" onClick={resetMapView}>
             Reset
-          </button>
-          <button
-            type="button"
-            className="control-button"
-            onClick={() =>
-              setTheme((currentTheme) =>
-                currentTheme === "dark" ? "light" : "dark",
-              )
-            }
-          >
-            {theme === "dark" ? "Light" : "Dark"}
           </button>
           <button
             type="button"
