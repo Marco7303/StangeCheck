@@ -23,6 +23,10 @@ area["boundary"="administrative"]["name"="Zug"]["admin_level"="8"]->.searchArea;
   way["amenity"~"^(pub|bar|biergarten|nightclub)$"](area.searchArea);
   relation["amenity"~"^(pub|bar|biergarten|nightclub)$"](area.searchArea);
 
+  node["amenity"="restaurant"]["bar"="yes"](area.searchArea);
+  way["amenity"="restaurant"]["bar"="yes"](area.searchArea);
+  relation["amenity"="restaurant"]["bar"="yes"](area.searchArea);
+
   node["brewery"](area.searchArea);
   way["brewery"](area.searchArea);
   relation["brewery"](area.searchArea);
