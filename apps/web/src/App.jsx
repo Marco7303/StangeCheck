@@ -534,10 +534,8 @@ function App() {
       <aside className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}>
         <div className="sidebar-top">
           <div>
-            <p className="sidebar-kicker">In current view</p>
-            <h2>Cheapest first</h2>
+            <h2>{filteredVisibleSpots.length} Prices found</h2>
           </div>
-          <div className="sidebar-count">{filteredVisibleSpots.length}</div>
         </div>
 
         <div className="sidebar-scroll">
