@@ -1,7 +1,0 @@
-{
-  "status": "checked_no_price",
-  "reason": "model returned found=false",
-  "validation_rejection_reason": "model returned found=false",
-  "crawl_errors": [],
-  "extraction_errors": []
-}

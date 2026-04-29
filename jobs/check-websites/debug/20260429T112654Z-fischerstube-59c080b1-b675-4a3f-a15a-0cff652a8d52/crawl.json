@@ -1,0 +1,390 @@
+{
+  "start_url": "https://fischerstube.ch",
+  "visited_pages": [
+    {
+      "requested_url": "https://fischerstube.ch",
+      "final_url": "https://fischerstube.ch/",
+      "depth": 0,
+      "priority": 100
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/",
+      "final_url": "https://barkarte.fischerstube.ch/",
+      "depth": 1,
+      "priority": 9
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/bier-cider/",
+      "final_url": "https://barkarte.fischerstube.ch/bier-cider/",
+      "depth": 2,
+      "priority": 24
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/softdrinks-kaffee-co/",
+      "final_url": "https://barkarte.fischerstube.ch/softdrinks-kaffee-co/",
+      "depth": 2,
+      "priority": 16
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/apero/",
+      "final_url": "https://barkarte.fischerstube.ch/apero/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/barfood/",
+      "final_url": "https://barkarte.fischerstube.ch/barfood/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/cocktails-next-level/",
+      "final_url": "https://barkarte.fischerstube.ch/cocktails-next-level/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/cocktails-signatures/",
+      "final_url": "https://barkarte.fischerstube.ch/cocktails-signatures/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/rose/",
+      "final_url": "https://barkarte.fischerstube.ch/rose/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/rotwein/",
+      "final_url": "https://barkarte.fischerstube.ch/rotwein/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/schaumwein/",
+      "final_url": "https://barkarte.fischerstube.ch/schaumwein/",
+      "depth": 2,
+      "priority": 15
+    },
+    {
+      "requested_url": "https://barkarte.fischerstube.ch/specials-aktuell/",
+      "final_url": "https://barkarte.fischerstube.ch/specials-aktuell/",
+      "depth": 2,
+      "priority": 15
+    }
+  ],
+  "ranked_html_candidates": [
+    {
+      "url": "https://barkarte.fischerstube.ch/bier-cider/",
+      "score": 24
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/softdrinks-kaffee-co/",
+      "score": 16
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/specials-aktuell/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/apero/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wein/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/schaumwein/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/rotwein/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/rose/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/cocktails-next-level/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/cocktails-signatures/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/spirituosen-portwein/",
+      "score": 15
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/barfood/",
+      "score": 15
+    },
+    {
+      "url": "https://fischerstube.ch/neue-genussmomente-unsere-neue-barkarte-ist-da/",
+      "score": 9
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/2025/02/24/hallo-welt/",
+      "score": 7
+    },
+    {
+      "url": "https://fischerstube.ch/fondue/",
+      "score": 7
+    },
+    {
+      "url": "https://fischerstube.ch/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/neuigkeiten/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/oeffnungszeiten/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/reservation/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/kontakt/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/instagram/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/chronik/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/neuigkeiten",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/neu-in-der-fischerstube-der-hopferol/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/dein-neuer-job-bei-uns/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/wir-suchen-verstaerkung-4/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/20-maerz-primavera-mit-wake/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/wo-geschichte-auf-genuss-trifft-unser-gewoelbekeller/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/weihnachtspero-am-24-dezember/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/ugly-christmas-sweater-day-am-freitag-19-dezember/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/verschenken-sie-cheers-momente-in-der-fischerstube/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/anstossen-mit-freunden/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/impressum/",
+      "score": 6
+    },
+    {
+      "url": "https://fischerstube.ch/category/produkte/",
+      "score": 0
+    },
+    {
+      "url": "https://fischerstube.ch/category/allgemein/",
+      "score": 0
+    },
+    {
+      "url": "https://fischerstube.ch/category/gaeste/",
+      "score": 0
+    },
+    {
+      "url": "https://fischerstube.ch/category/events/",
+      "score": 0
+    },
+    {
+      "url": "https://fischerstube.ch/page/2/",
+      "score": 0
+    },
+    {
+      "url": "https://fischerstube.ch/page/11/",
+      "score": 0
+    }
+  ],
+  "ranked_pdf_candidates": [],
+  "ranked_image_candidates": [
+    {
+      "url": "https://s.w.org/images/core/emoji/17.0.2/svg/1f379.svg",
+      "score": 12
+    },
+    {
+      "url": "https://s.w.org/images/core/emoji/17.0.2/svg/1f377.svg",
+      "score": 12
+    },
+    {
+      "url": "https://s.w.org/images/core/emoji/17.0.2/svg/1f374.svg",
+      "score": 12
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/PXL_20260421_110230997.PORTRAIT-scaled.jpg",
+      "score": 10
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/Logo2_mod-1.png",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/DSC6494.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/deckbanner2026.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/2026_Team.png",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/wakeWeb.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/Gewoelbe2.png",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/GoldeneSchnitt.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/WebBanner1.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/UCSD2025_web.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/GutscheinWeb2.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/AnstossenWEB4.jpg",
+      "score": 9
+    },
+    {
+      "url": "https://fischerstube.ch/wp-content/uploads/180805_WS_Fischer.svg_-157x300.png",
+      "score": 9
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/2_Bier1-1.jpg",
+      "score": 6
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/3_Bier2.jpg",
+      "score": 6
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/17_SoftKaffee-591x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/1_Apero-1.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/18_Barfood1.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/19_Barfood2.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/20_Barfood3-571x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/7_NLM0-673x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/8_NLM1-690x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/9_NLM2-688x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/10_NLM3-685x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/11_Signature-588x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/12_Klassiker-684x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/03/5_Rose.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/6_Rotwein-521x1024.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2026/01/5_Schaumwein.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2025/11/WinterSpecials1.jpg",
+      "score": 5
+    },
+    {
+      "url": "https://barkarte.fischerstube.ch/wp-content/uploads/2025/11/WinterSpecials2.jpg",
+      "score": 5
+    }
+  ],
+  "selected_pdf_urls": [],
+  "selected_image_urls": [
+    "https://s.w.org/images/core/emoji/17.0.2/svg/1f379.svg",
+    "https://s.w.org/images/core/emoji/17.0.2/svg/1f377.svg",
+    "https://s.w.org/images/core/emoji/17.0.2/svg/1f374.svg",
+    "https://fischerstube.ch/wp-content/uploads/PXL_20260421_110230997.PORTRAIT-scaled.jpg",
+    "https://fischerstube.ch/wp-content/uploads/Logo2_mod-1.png",
+    "https://fischerstube.ch/wp-content/uploads/DSC6494.jpg",
+    "https://fischerstube.ch/wp-content/uploads/deckbanner2026.jpg",
+    "https://fischerstube.ch/wp-content/uploads/2026_Team.png"
+  ],
+  "crawl_errors": []
+}

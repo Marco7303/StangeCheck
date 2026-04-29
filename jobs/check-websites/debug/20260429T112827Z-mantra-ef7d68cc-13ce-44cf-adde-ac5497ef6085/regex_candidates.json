@@ -1,0 +1,58 @@
+[
+  {
+    "beer_name": "(1dl)\n ESPESSES 8.5* SAUVIGNON BLANC 8.5* PINOT GRIGIO 8.5* CORONA MAGNERS (CIDE",
+    "price_chf": 9.5,
+    "volume_l": 0.5,
+    "evidence": "                    (1dl)\n   ESPESSES 8.5*   SAUVIGNON BLANC 8.5* PINOT GRIGIO 8.5*   CORONA          MAGNERS (CIDER)    SCHNEIDER WEISSE TAP 7\n   Vins de la Régence, Santa Carolina Reserva, CL Venezie DOC Casalforte, IT 33 cl 7.5 50 cl 9.5",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "ESPESSES 8.5* SAUVIGNON BLANC 8.5* PINOT GRIGIO 8.5* CORONA MAGNERS (CIDER) SCHN",
+    "price_chf": 9.5,
+    "volume_l": 0.5,
+    "evidence": "   ESPESSES 8.5*   SAUVIGNON BLANC 8.5* PINOT GRIGIO 8.5*   CORONA          MAGNERS (CIDER)    SCHNEIDER WEISSE TAP 7\n   Vins de la Régence, Santa Carolina Reserva, CL Venezie DOC Casalforte, IT 33 cl 7.5 50 cl 9.5 50 cl 9.5\n   Cully, CH",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "Vins de la Régence, Santa Carolina Reserva, CL Venezie DOC Casalforte, IT 33 cl",
+    "price_chf": 9.5,
+    "volume_l": 0.5,
+    "evidence": "   Vins de la Régence, Santa Carolina Reserva, CL Venezie DOC Casalforte, IT 33 cl 7.5 50 cl 9.5 50 cl 9.5\n   Cully, CH\n                                                            BAARER BIER     FELDSCHLÖSSCHEN     FELDSCHLÖSSCHEN",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "BAARER BIER\n BÜGELSPETZ\n Rotwein (1dl) 50 cl 9.5",
+    "price_chf": 9.5,
+    "volume_l": 0.5,
+    "evidence": "                                                            BAARER BIER\n                                                            BÜGELSPETZ\n   Rotwein (1dl)                                            50 cl 9.5",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "50 cl 8.7 50 cl 9.7 50 cl 9\n MICHEL MICHEL MICHEL\n HOP HOUSE 13 GUINNESS DRAUGHT",
+    "price_chf": 8.7,
+    "volume_l": 0.5,
+    "evidence": "   50 cl 8.7       50 cl 9.7         50 cl 9\n                                                            MICHEL          MICHEL            MICHEL\n   HOP HOUSE 13    GUINNESS DRAUGHT  BROOKLYN LAGER",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "50 cl 9.7 50 cl 9.7 50 cl 9.7 20 cl 5 30 cl 5 30 cl 5\n 50 cl 6 50 cl 6\n VALAISAN",
+    "price_chf": 5.0,
+    "volume_l": 0.5,
+    "evidence": "   50 cl 9.7       50 cl 9.7         50 cl 9.7              20 cl 5         30 cl 5           30 cl 5\n                                                                            50 cl 6           50 cl 6\n   VALAISANNE      SAISON-BIER      ",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "50 cl 6 50 cl 6\n VALAISANNE SAISON",
+    "price_chf": 6.0,
+    "volume_l": 0.5,
+    "evidence": "                                                                            50 cl 6           50 cl 6\n   VALAISANNE      SAISON-BIER                              MICHEL\n   PALE ALE        30 cl 6                                  ANANASNEKTA",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  },
+  {
+    "beer_name": "VALAISANNE SAISON",
+    "price_chf": 5.0,
+    "volume_l": 0.5,
+    "evidence": "   VALAISANNE      SAISON-BIER                              MICHEL\n   PALE ALE        30 cl 6                                  ANANASNEKTAR\n   30 cl 6         50 cl 9.7                                30 cl 5",
+    "source_url": "https://www.mantra.ch/_files/ugd/f2afba_c1b0aa1fb626486693266c7bb27cd2f4.pdf"
+  }
+]

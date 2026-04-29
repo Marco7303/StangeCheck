@@ -6408,28 +6408,34 @@ Tür schieben
                                                                              Grundriss
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/3576c375-9e61-46eb-a4c4-1da810ac7b97/FR_Mainstationbar_3.jpg]
-KARMA
-  SPECIALS
-   Spritz  6,5
-   Lillet  6,5
-   Aperol  6,5
-   Hugo  6,5
-   Prosecco  6,5
-   Sprizz Rosato  6,5
+KAMPLA
+SPECIALS
+Apperol Spritz	7,5
+Lillet Wildberry	7,5
+Gin Tonic	7,5
+Hugo	7,5
+Moskov Mule	7,5
+Caipi	7,5
+TA...
+.../7,5
+Tee...
+FRISCHER MINZTEE...
+FRISCHER INGWERTEE...
+COFFEE
+...
+CAPPUCCINO LARGE...
+L...
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/c5b7db62-c125-4ee5-99e3-371a9a2e5200/Freiruum-Zug-Drinks-Dezember2022_I6A9996.jpg]
 Schützengarten
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/b32f7527-e728-4d27-8fd5-3420a43da95b/FR_Mainstationbar_5.jpg]
-The visible menu text in the image is:
-"CINNAMON"
-"KOEK"
+COCKTAILS
+GIN & TONIC
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/ae700196-52bb-41eb-81d6-4249e523eed4/FreiruumLogo_White.png?format=1500w]
 FREI
-R
-U
-M
+RUM
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/e0916faa-29c7-4e47-b332-9cb3a9b50f0c/Gewinner-Batch-de.png]
 SWISS LOCATION AWARD® BY EVENTLOKALE.CH
@@ -6439,7 +6445,7 @@ HERAUSRAGEND
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/1673534629076-TJRWWCZ26AJTSEQTIHD7/Website-Batch-Herausragend_de-1024x1024.png]
 SWISS LOCATION AWARD® BY EVENTLOKALE.CH
 2022
-★ HERAUSRAGEND ★
+HERAUSRAGEND
 
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/453de4e2-372c-4aeb-99aa-ed21ab386373/Winner-Batch-DE.png]
 SWISS LOCATION AWARD® BY EVENTLOKALE.CH
@@ -6449,4 +6455,4 @@ SWISS LOCATION AWARD® BY EVENTLOKALE.CH
 [IMAGE: https://images.squarespace-cdn.com/content/v1/63a1a01b73a47f1fd6125883/f4c260c5-8ff4-47ed-b270-928dee61add7/Winner-Batch-DE+%282%29.png]
 SWISS LOCATION AWARD® BY EVENTLOKALE.CH
 2024
-★AUSGEZEICHNET★
+★ AUSGEZEICHNET ★

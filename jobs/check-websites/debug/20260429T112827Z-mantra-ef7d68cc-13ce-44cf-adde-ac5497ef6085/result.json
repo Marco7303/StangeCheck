@@ -1,0 +1,7 @@
+{
+  "status": "checked_no_price",
+  "reason": "model evidence not found in gathered text",
+  "validation_rejection_reason": "model evidence not found in gathered text",
+  "crawl_errors": [],
+  "extraction_errors": []
+}
