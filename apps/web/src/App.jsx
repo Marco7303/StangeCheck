@@ -34,6 +34,14 @@ function getRandomAdIndex() {
   return Math.floor(Math.random() * adBanners.length);
 }
 
+function getNextAdIndex(currentIndex) {
+  if (adBanners.length <= 1) {
+    return currentIndex;
+  }
+
+  return (currentIndex + 1) % adBanners.length;
+}
+
 const numberFormat = new Intl.NumberFormat("de-CH", {
   style: "currency",
   currency: "CHF",
@@ -138,7 +146,7 @@ function App() {
   const [showLoader, setShowLoader] = useState(true);
   const [loaderExiting, setLoaderExiting] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(10);
-  const [activeAdIndex] = useState(() => getRandomAdIndex());
+  const [activeAdIndex, setActiveAdIndex] = useState(() => getRandomAdIndex());
   const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -675,9 +683,13 @@ function App() {
           </div>
 
           {activeAd ? (
-            <div className="sidebar-ad">
+            <button
+              type="button"
+              className="sidebar-ad"
+              onClick={() => setActiveAdIndex((current) => getNextAdIndex(current))}
+            >
               <img src={activeAd.src} alt={activeAd.alt} />
-            </div>
+            </button>
           ) : null}
         </aside>
 

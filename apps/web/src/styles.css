@@ -428,7 +428,11 @@ button {
 }
 
 .sidebar-ad {
+  padding: 0;
+  border: none;
+  background: transparent;
   overflow: hidden;
+  cursor: default;
 }
 
 .sidebar-ad img {
