@@ -9,6 +9,8 @@ import mapboxgl from "mapbox-gl";
 import logoLight from "./assets/logo-light.svg";
 import { listVenues } from "./lib/venues";
 
+const minimumLoaderMs = 2000;
+
 const numberFormat = new Intl.NumberFormat("de-CH", {
   style: "currency",
   currency: "CHF",
@@ -110,12 +112,16 @@ function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(10);
   const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const deferredSearch = useDeferredValue(searchValue);
+  const loadStartedAtRef = useRef(Date.now());
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef(new Map());
@@ -124,6 +130,7 @@ function App() {
 
   useEffect(() => {
     let active = true;
+    loadStartedAtRef.current = Date.now();
 
     setLoading(true);
     setLoadError("");
@@ -161,6 +168,41 @@ function App() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      const elapsed = Date.now() - loadStartedAtRef.current;
+      const remaining = Math.max(minimumLoaderMs - elapsed, 0);
+      const timeoutId = window.setTimeout(() => {
+        setLoadingProgress(100);
+        setLoaderExiting(true);
+      }, remaining);
+
+      const hideTimeoutId = window.setTimeout(() => {
+        setShowLoader(false);
+      }, remaining + 900);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        window.clearTimeout(hideTimeoutId);
+      };
+    }
+
+    setShowLoader(true);
+    setLoaderExiting(false);
+    setLoadingProgress(8);
+
+    const progressInterval = window.setInterval(() => {
+      const elapsed = Date.now() - loadStartedAtRef.current;
+      const progressRatio = Math.min(elapsed / minimumLoaderMs, 1);
+      const nextProgress = 8 + progressRatio * 76;
+      setLoadingProgress(Math.min(nextProgress, 84));
+    }, 60);
+
+    return () => {
+      window.clearInterval(progressInterval);
+    };
+  }, [loading]);
 
   const visibleSpots = useMemo(() => {
     return spots
@@ -460,6 +502,29 @@ function App() {
 
   return (
     <div className="screen">
+      {showLoader ? (
+        <div
+          className={`loading-screen ${loaderExiting ? "is-complete" : ""}`.trim()}
+        >
+          <div className="loading-panel">
+            <img
+              className="loading-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <div className="loading-track" aria-hidden="true">
+              <div
+                className="loading-bar"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
+            <span className="loading-percent">
+              {Math.round(loadingProgress)}%
+            </span>
+          </div>
+        </div>
+      ) : null}
+
       <div ref={mapRef} className="map-canvas" />
       <div className="map-scrim" />
 

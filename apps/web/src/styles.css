@@ -48,6 +48,81 @@ button {
   background: var(--bg);
 }
 
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    radial-gradient(circle at top left, rgba(218, 4, 44, 0.08), transparent 34%),
+    radial-gradient(circle at 85% 20%, rgba(197, 91, 56, 0.08), transparent 26%);
+  transition: opacity 560ms ease, visibility 560ms ease;
+}
+
+.loading-screen.is-complete {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-panel {
+  width: min(560px, calc(100vw - 48px));
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  animation: loadingPanelIn 700ms ease both;
+}
+
+.loading-logo {
+  width: min(100%, 400px);
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.loading-track {
+  position: relative;
+  width: min(100%, 340px);
+  height: 8px;
+  border: 1px solid rgba(218, 4, 44, 0.34);
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.loading-bar {
+  height: 100%;
+  background:
+    linear-gradient(90deg, #c55b38 0%, #da042c 52%, #c55b38 100%);
+  box-shadow: 12px 0 28px rgba(218, 4, 44, 0.18);
+  transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.loading-percent {
+  color: var(--muted);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@keyframes loadingPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .map-canvas {
   position: absolute;
   inset: 0;
@@ -636,6 +711,20 @@ button {
 }
 
 @media (max-width: 1040px) {
+  .loading-panel {
+    gap: 16px;
+  }
+
+  .loading-status {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .loading-message {
+    text-align: center;
+  }
+
   .floating-topbar {
     grid-template-columns: 1fr;
     align-items: stretch;
