@@ -10,6 +10,29 @@ import logoLight from "./assets/logo-light.svg";
 import { listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
+const adBanners = Object.entries(
+  import.meta.glob("./assets/ad-banners/*.{png,jpg,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .map(([path, src]) => ({
+    src,
+    alt: path
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      .replace(/[-_]+/g, " ") ?? "Advertisement",
+  }));
+
+function getRandomAdIndex() {
+  if (!adBanners.length) {
+    return 0;
+  }
+
+  return Math.floor(Math.random() * adBanners.length);
+}
 
 const numberFormat = new Intl.NumberFormat("de-CH", {
   style: "currency",
@@ -115,6 +138,7 @@ function App() {
   const [showLoader, setShowLoader] = useState(true);
   const [loaderExiting, setLoaderExiting] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(10);
+  const [activeAdIndex] = useState(() => getRandomAdIndex());
   const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -228,6 +252,7 @@ function App() {
     return visibleSpots.find((spot) => spot.id === selectedId) ?? null;
   }, [visibleSpots, selectedId]);
   const datasetBounds = useMemo(() => getMapBounds(spots), [spots]);
+  const activeAd = adBanners[activeAdIndex] ?? null;
 
   const pricedVisibleSpots = filteredVisibleSpots.filter(
     (spot) => spot.price != null,
@@ -595,6 +620,9 @@ function App() {
           className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}
         >
           <div className="sidebar-top">
+            <div>
+              <h2>{filteredVisibleSpots.length} Prices found</h2>
+            </div>
             <button
               type="button"
               className="sidebar-close"
@@ -603,10 +631,6 @@ function App() {
             >
               X
             </button>
-            <div className="sidebar-ad-placeholder" aria-hidden="true" />
-            <div>
-              <h2>{filteredVisibleSpots.length} Prices found</h2>
-            </div>
           </div>
 
           <div className="sidebar-scroll">
@@ -649,6 +673,12 @@ function App() {
               </div>
             )}
           </div>
+
+          {activeAd ? (
+            <div className="sidebar-ad">
+              <img src={activeAd.src} alt={activeAd.alt} />
+            </div>
+          ) : null}
         </aside>
 
         {!sidebarOpen ? (
