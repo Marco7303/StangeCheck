@@ -665,7 +665,7 @@ function App() {
             type="search"
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Search visible venues, cities, or beer names"
+            placeholder="Search visible venues or beer names"
           />
         </form>
 
