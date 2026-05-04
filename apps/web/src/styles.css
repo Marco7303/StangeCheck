@@ -144,9 +144,107 @@ button {
 .floating-topbar,
 .floating-sidebar,
 .floating-stats,
-.map-fallback {
+.map-fallback,
+.event-popup {
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
+}
+
+.event-popup {
+  position: absolute;
+  top: 140px;
+  left: 18px;
+  z-index: 59;
+  width: min(320px, calc(100vw - 36px));
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(20, 20, 20, 0.08);
+  box-shadow: var(--shadow);
+  animation: eventPopupIn 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.event-popup-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.event-popup-tag {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.event-popup-tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  background: rgba(20, 20, 20, 0.08);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.event-popup h3 {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 0.95;
+}
+
+.event-popup p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.event-popup-media {
+  overflow: hidden;
+  border: 1px solid rgba(20, 20, 20, 0.08);
+}
+
+.event-popup-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.event-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--accent-line);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.event-popup-close:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: #ffffff;
+}
+
+@keyframes eventPopupIn {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .floating-topbar {
@@ -750,6 +848,10 @@ button {
     left: 18px;
   }
 
+  .event-popup {
+    top: 94px;
+  }
+
   .mapboxgl-ctrl-bottom-left {
     bottom: 164px;
   }
@@ -758,6 +860,13 @@ button {
 @media (max-width: 760px) {
   .floating-topbar {
     padding: 12px;
+  }
+
+  .event-popup {
+    top: 134px;
+    left: 12px;
+    width: min(320px, calc(100vw - 24px));
+    padding: 14px;
   }
 
   .floating-sidebar {

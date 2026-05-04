@@ -25,6 +25,41 @@ const adBanners = Object.entries(
       ?.replace(/\.[^.]+$/, "")
       .replace(/[-_]+/g, " ") ?? "Advertisement",
   }));
+const popupAds = Object.entries(
+  import.meta.glob("./assets/ad-popup/*.{png,jpg,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .map(([path, src]) => ({
+    key:
+      path
+        .split("/")
+        .pop()
+        ?.replace(/\.[^.]+$/, "") ?? "sponsored-event",
+    src,
+    alt: path
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      .replace(/[-_]+/g, " ") ?? "Sponsored event",
+  }));
+
+const popupAdContent = {
+  jazz: {
+    title: "Zug Jazz Night",
+    body: "Live set in Zug. Save before it sells out.",
+  },
+  schwimm: {
+    title: "Schwimmfest Zug",
+    body: "Summer swims, music, and a quick ticket deal.",
+  },
+  tech: {
+    title: "Tech am See",
+    body: "Late-night techno by the lake. Loud, fast, and local.",
+  },
+};
 
 function getRandomAdIndex() {
   if (!adBanners.length) {
@@ -147,6 +182,11 @@ function App() {
   const [loaderExiting, setLoaderExiting] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(10);
   const [activeAdIndex, setActiveAdIndex] = useState(() => getRandomAdIndex());
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupDismissed, setPopupDismissed] = useState(false);
+  const [popupAdIndex] = useState(() =>
+    popupAds.length ? Math.floor(Math.random() * popupAds.length) : 0,
+  );
   const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
@@ -261,6 +301,9 @@ function App() {
   }, [visibleSpots, selectedId]);
   const datasetBounds = useMemo(() => getMapBounds(spots), [spots]);
   const activeAd = adBanners[activeAdIndex] ?? null;
+  const activePopupAd = popupAds[popupAdIndex] ?? null;
+  const activePopupContent =
+    popupAdContent[activePopupAd?.key] ?? popupAdContent.jazz;
 
   const pricedVisibleSpots = filteredVisibleSpots.filter(
     (spot) => spot.price != null,
@@ -533,6 +576,25 @@ function App() {
     };
   }, [sidebarOpen]);
 
+  useEffect(() => {
+    if (popupDismissed) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPopupVisible(true);
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [popupDismissed]);
+
+  function handleClosePopup() {
+    setPopupVisible(false);
+    setPopupDismissed(true);
+  }
+
   return (
     <div className="screen">
       {showLoader ? (
@@ -560,6 +622,30 @@ function App() {
 
       <div ref={mapRef} className="map-canvas" />
       <div className="map-scrim" />
+
+      {popupVisible && activePopupAd ? (
+        <aside
+          className="event-popup"
+          aria-label="Sponsored event advertisement"
+        >
+          <button
+            type="button"
+            className="event-popup-close"
+            aria-label="Close advertisement"
+            onClick={handleClosePopup}
+          >
+            X
+          </button>
+          <div className="event-popup-copy">
+            <span className="event-popup-tag">Sponsored</span>
+            <h3>{activePopupContent.title}</h3>
+            <p>{activePopupContent.body}</p>
+          </div>
+          <div className="event-popup-media">
+            <img src={activePopupAd.src} alt={activePopupAd.alt} />
+          </div>
+        </aside>
+      ) : null}
 
       <header className="floating-topbar">
         <div className="brand">
