@@ -4,11 +4,15 @@ Planned POC flow:
 
 ```text
 OSM/Overpass -> import job -> Supabase -> web frontend
+Gmail inbox -> manual Gmail ingest -> OpenAI -> Supabase
 ```
 
 ## Components
 
 - `jobs/import-osm` will fetch and normalize source venue data.
+- `jobs/gmail-ingest` scans the Gmail inbox when run manually, extracts beer
+  prices from email text, updates matching venue rows in Supabase, and archives
+  processed messages.
 - `supabase` will store the canonical venue records and schema history.
 - `apps/web` will read that data and present it in the frontend.
 
