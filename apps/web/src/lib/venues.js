@@ -20,7 +20,7 @@ function toUiVenue(row) {
     lng: Number(row.lng),
     price: hasPrice ? price : null,
     beer: row.cheapest_lager_name ?? "Lager price pending",
-    vibe: evidence ?? "Live venue data from Supabase",
+    vibe: evidence,
     website: row.website ?? "",
     source: row.price_source ?? row.source ?? "",
     priceUpdatedAt: row.price_updated_at ?? null,

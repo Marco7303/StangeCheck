@@ -760,7 +760,7 @@ function App() {
                       <p>
                         {spot.city}, {spot.canton} · {spot.beer}
                       </p>
-                      <small>{spot.vibe}</small>
+                      {spot.address ? <small><em>{spot.address}</em></small> : null}
                     </div>
                   </button>
                 ))}
