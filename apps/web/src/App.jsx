@@ -175,6 +175,7 @@ function buildDirectionsUrl(spot) {
 }
 
 function App() {
+  const [ageGateStatus, setAgeGateStatus] = useState("pending");
   const [spots, setSpots] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -647,7 +648,7 @@ function App() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    if (popupDismissed) {
+    if (showLoader || ageGateStatus !== "accepted" || popupDismissed) {
       return;
     }
 
@@ -658,11 +659,20 @@ function App() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [popupDismissed]);
+  }, [ageGateStatus, popupDismissed, showLoader]);
 
   function handleClosePopup() {
     setPopupVisible(false);
     setPopupDismissed(true);
+  }
+
+  function handleAgeAccepted() {
+    setAgeGateStatus("accepted");
+  }
+
+  function handleAgeDenied() {
+    setAgeGateStatus("denied");
+    setPopupVisible(false);
   }
 
   useEffect(() => {
@@ -692,6 +702,29 @@ function App() {
             </span>
           </div>
         </div>
+      ) : null}
+
+      {!showLoader && ageGateStatus === "denied" ? (
+        <section className="age-blocked-screen">
+          <div className="age-blocked-panel">
+            <img
+              className="age-blocked-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <div className="age-blocked-copy">
+              <h1>You cannot access this site yet.</h1>
+              <p>
+                Under Swiss law, this website is only intended for people aged
+                16 and over because it contains alcohol-related content.
+              </p>
+              <p>
+                We will be happy to welcome you back once you have reached the
+                required age.
+              </p>
+            </div>
+          </div>
+        </section>
       ) : null}
 
       <div ref={mapRef} className="map-canvas" />
@@ -864,6 +897,39 @@ function App() {
           </button>
         ) : null}
       </div>
+
+      {!showLoader && ageGateStatus === "pending" ? (
+        <div className="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+          <div className="age-gate-panel">
+            <img
+              className="age-gate-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <h2 id="age-gate-title">Are you 16 or older?</h2>
+            <p>
+              Stange Check shows alcohol-related content and is only available
+              to users aged 16+ in Switzerland.
+            </p>
+            <div className="age-gate-actions">
+              <button
+                type="button"
+                className="control-button is-primary"
+                onClick={handleAgeAccepted}
+              >
+                Yes, I am 16+
+              </button>
+              <button
+                type="button"
+                className="control-button"
+                onClick={handleAgeDenied}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

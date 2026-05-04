@@ -68,6 +68,123 @@ button {
   pointer-events: none;
 }
 
+.age-gate,
+.age-blocked-screen {
+  position: absolute;
+  inset: 0;
+}
+
+.age-gate {
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    linear-gradient(180deg, rgba(12, 10, 8, 0.5), rgba(12, 10, 8, 0.58)),
+    radial-gradient(circle at top left, rgba(218, 4, 44, 0.18), transparent 30%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.age-gate-panel,
+.age-blocked-panel {
+  width: min(560px, calc(100vw - 40px));
+  border: 1px solid rgba(20, 20, 20, 0.08);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: var(--shadow);
+}
+
+.age-gate-panel {
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  justify-items: center;
+  text-align: center;
+  animation: loadingPanelIn 520ms ease both;
+}
+
+.age-gate-logo {
+  width: min(100%, 300px);
+  height: auto;
+}
+
+.age-gate-tag,
+.age-blocked-tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  background: rgba(20, 20, 20, 0.08);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.age-gate-panel h2,
+.age-blocked-copy h1 {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-weight: 600;
+  line-height: 0.95;
+}
+
+.age-gate-panel h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.age-gate-panel p,
+.age-blocked-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.age-gate-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.age-blocked-screen {
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    radial-gradient(circle at top left, rgba(218, 4, 44, 0.08), transparent 34%),
+    radial-gradient(circle at 85% 20%, rgba(197, 91, 56, 0.08), transparent 26%);
+}
+
+.age-blocked-panel {
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  padding: 38px 30px 34px;
+  text-align: center;
+  animation: loadingPanelIn 520ms ease both;
+}
+
+.age-blocked-logo {
+  width: min(100%, 290px);
+  height: auto;
+}
+
+.age-blocked-copy {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 460px;
+}
+
+.age-blocked-copy h1 {
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+}
+
 .loading-panel {
   width: min(560px, calc(100vw - 48px));
   display: grid;
@@ -891,6 +1008,11 @@ button {
     top: 94px;
   }
 
+  .age-gate-panel,
+  .age-blocked-panel {
+    width: min(560px, calc(100vw - 28px));
+  }
+
   .mapboxgl-ctrl-bottom-left {
     bottom: 164px;
   }
@@ -899,6 +1021,28 @@ button {
 @media (max-width: 760px) {
   .floating-topbar {
     padding: 12px;
+  }
+
+  .age-gate,
+  .age-blocked-screen {
+    padding: 16px;
+  }
+
+  .age-gate-panel {
+    padding: 22px 18px;
+  }
+
+  .age-gate-actions {
+    flex-direction: column;
+  }
+
+  .age-gate-actions .control-button {
+    width: 100%;
+  }
+
+  .age-blocked-panel {
+    padding: 28px 18px 24px;
+    gap: 18px;
   }
 
   .event-popup {
