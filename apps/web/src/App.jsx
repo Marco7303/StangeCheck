@@ -1,12 +1,82 @@
 import {
   useDeferredValue,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
-import { listBeerSpots } from "./lib/mockDb";
+import logoLight from "./assets/logo-light.svg";
+import { flagVenuePrice, listVenues } from "./lib/venues";
+
+const minimumLoaderMs = 2000;
+const adBanners = Object.entries(
+  import.meta.glob("./assets/ad-banners/*.{png,jpg,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .map(([path, src]) => ({
+    src,
+    alt: path
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      .replace(/[-_]+/g, " ") ?? "Advertisement",
+  }));
+const popupAds = Object.entries(
+  import.meta.glob("./assets/ad-popup/*.{png,jpg,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+)
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .map(([path, src]) => ({
+    key:
+      path
+        .split("/")
+        .pop()
+        ?.replace(/\.[^.]+$/, "") ?? "sponsored-event",
+    src,
+    alt: path
+      .split("/")
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      .replace(/[-_]+/g, " ") ?? "Sponsored event",
+  }));
+
+const popupAdContent = {
+  jazz: {
+    title: "Zug Jazz Night",
+    body: "Live set in Zug. Save before it sells out.",
+  },
+  schwimm: {
+    title: "Schwimmfest Zug",
+    body: "Summer swims, music, and a quick ticket deal.",
+  },
+  tech: {
+    title: "Tech am See",
+    body: "Late-night techno by the lake. Loud, fast, and local.",
+  },
+};
+
+function getRandomAdIndex() {
+  if (!adBanners.length) {
+    return 0;
+  }
+
+  return Math.floor(Math.random() * adBanners.length);
+}
+
+function getNextAdIndex(currentIndex) {
+  if (adBanners.length <= 1) {
+    return currentIndex;
+  }
+
+  return (currentIndex + 1) % adBanners.length;
+}
 
 const numberFormat = new Intl.NumberFormat("de-CH", {
   style: "currency",
@@ -44,6 +114,54 @@ function matchesQuery(spot, query) {
   return haystack.includes(query);
 }
 
+function compareByPrice(left, right) {
+  if (left.price == null && right.price == null) {
+    return left.name.localeCompare(right.name);
+  }
+
+  if (left.price == null) {
+    return 1;
+  }
+
+  if (right.price == null) {
+    return -1;
+  }
+
+  if (left.price === right.price) {
+    return left.name.localeCompare(right.name);
+  }
+
+  return left.price - right.price;
+}
+
+function formatPrice(value) {
+  return value == null ? "Price pending" : numberFormat.format(value);
+}
+
+function formatMarkerPrice(value) {
+  return value == null ? "Pending" : numberFormat.format(value);
+}
+
+function getMapBounds(spots) {
+  if (!spots.length) {
+    return swissBounds;
+  }
+
+  const latitudes = spots.map((spot) => spot.lat);
+  const longitudes = spots.map((spot) => spot.lng);
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLng = Math.min(...longitudes);
+  const maxLng = Math.max(...longitudes);
+  const latPadding = Math.max((maxLat - minLat) * 0.2, 0.01);
+  const lngPadding = Math.max((maxLng - minLng) * 0.2, 0.01);
+
+  return [
+    [minLng - lngPadding, minLat - latPadding],
+    [maxLng + lngPadding, maxLat + latPadding],
+  ];
+}
+
 function buildDirectionsUrl(spot) {
   const destination = [
     spot.name,
@@ -57,25 +175,29 @@ function buildDirectionsUrl(spot) {
 }
 
 function App() {
-  const [theme, setTheme] = useState(() => {
-    const storedTheme = window.localStorage.getItem("stange-check-theme");
-    if (storedTheme) {
-      return storedTheme;
-    }
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  });
   const [spots, setSpots] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(10);
+  const [activeAdIndex, setActiveAdIndex] = useState(() => getRandomAdIndex());
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupDismissed, setPopupDismissed] = useState(false);
+  const [popupAdIndex] = useState(() =>
+    popupAds.length ? Math.floor(Math.random() * popupAds.length) : 0,
+  );
+  const [flaggingVenueId, setFlaggingVenueId] = useState(null);
+  const [flagError, setFlagError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const deferredSearch = useDeferredValue(searchValue);
+  const popupStatusId = useId();
+  const loadStartedAtRef = useRef(Date.now());
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef(new Map());
@@ -83,32 +205,85 @@ function App() {
   const visibleIdsRef = useRef([]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("stange-check-theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
     let active = true;
+    loadStartedAtRef.current = Date.now();
 
-    listBeerSpots().then((rows) => {
-      if (!active) {
-        return;
-      }
+    setLoading(true);
+    setLoadError("");
 
-      setSpots(rows);
-      setSelectedId(null);
-      setLoading(false);
-    });
+    listVenues()
+      .then((rows) => {
+        if (!active) {
+          return;
+        }
+
+        setSpots(
+          rows.filter(
+            (row) => Number.isFinite(row.lat) && Number.isFinite(row.lng),
+          ),
+        );
+        setSelectedId(null);
+      })
+      .catch((error) => {
+        if (!active) {
+          return;
+        }
+
+        setSpots([]);
+        setLoadError(
+          error instanceof Error ? error.message : "Unable to load venues.",
+        );
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       active = false;
     };
   }, []);
 
+  useEffect(() => {
+    if (!loading) {
+      const elapsed = Date.now() - loadStartedAtRef.current;
+      const remaining = Math.max(minimumLoaderMs - elapsed, 0);
+      const timeoutId = window.setTimeout(() => {
+        setLoadingProgress(100);
+        setLoaderExiting(true);
+      }, remaining);
+
+      const hideTimeoutId = window.setTimeout(() => {
+        setShowLoader(false);
+      }, remaining + 900);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+        window.clearTimeout(hideTimeoutId);
+      };
+    }
+
+    setShowLoader(true);
+    setLoaderExiting(false);
+    setLoadingProgress(8);
+
+    const progressInterval = window.setInterval(() => {
+      const elapsed = Date.now() - loadStartedAtRef.current;
+      const progressRatio = Math.min(elapsed / minimumLoaderMs, 1);
+      const nextProgress = 8 + progressRatio * 76;
+      setLoadingProgress(Math.min(nextProgress, 84));
+    }, 60);
+
+    return () => {
+      window.clearInterval(progressInterval);
+    };
+  }, [loading]);
+
   const visibleSpots = useMemo(() => {
     return spots
       .filter((spot) => visibleIds.includes(spot.id))
-      .sort((left, right) => left.price - right.price);
+      .sort(compareByPrice);
   }, [spots, visibleIds]);
 
   const normalizedQuery = deferredSearch.trim().toLowerCase();
@@ -128,11 +303,19 @@ function App() {
   const selectedVisibleSpot = useMemo(() => {
     return visibleSpots.find((spot) => spot.id === selectedId) ?? null;
   }, [visibleSpots, selectedId]);
+  const datasetBounds = useMemo(() => getMapBounds(spots), [spots]);
+  const activeAd = adBanners[activeAdIndex] ?? null;
+  const activePopupAd = popupAds[popupAdIndex] ?? null;
+  const activePopupContent =
+    popupAdContent[activePopupAd?.key] ?? popupAdContent.jazz;
 
-  const cheapestVisible = filteredVisibleSpots[0] ?? null;
+  const pricedVisibleSpots = filteredVisibleSpots.filter(
+    (spot) => spot.price != null,
+  );
+  const cheapestVisible = pricedVisibleSpots[0] ?? null;
   const averageVisiblePrice =
-    filteredVisibleSpots.reduce((total, spot) => total + spot.price, 0) /
-      (filteredVisibleSpots.length || 1);
+    pricedVisibleSpots.reduce((total, spot) => total + spot.price, 0) /
+      (pricedVisibleSpots.length || 1);
   const visibleCities = new Set(filteredVisibleSpots.map((spot) => spot.city)).size;
 
   function syncVisibleSpots(map) {
@@ -173,7 +356,7 @@ function App() {
       return;
     }
 
-    mapInstanceRef.current.fitBounds(swissBounds, {
+    mapInstanceRef.current.fitBounds(datasetBounds, {
       padding: {
         top: 110,
         right: sidebarOpen ? 430 : 32,
@@ -189,6 +372,30 @@ function App() {
 
     if (filteredVisibleSpots[0]) {
       focusSpot(filteredVisibleSpots[0], 13.5);
+    }
+  }
+
+  async function handleFlagVenuePrice(venueId) {
+    if (!venueId || flaggingVenueId === venueId) {
+      return;
+    }
+
+    setFlaggingVenueId(venueId);
+    setFlagError("");
+
+    try {
+      await flagVenuePrice(venueId);
+      setSpots((currentSpots) =>
+        currentSpots.map((spot) =>
+          spot.id === venueId ? { ...spot, userFlagged: true } : spot,
+        ),
+      );
+    } catch (error) {
+      setFlagError(
+        error instanceof Error ? error.message : "Unable to flag this price.",
+      );
+    } finally {
+      setFlaggingVenueId(null);
     }
   }
 
@@ -218,7 +425,7 @@ function App() {
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/standard",
-        bounds: swissBounds,
+        bounds: datasetBounds,
         fitBoundsOptions: {
           padding: {
             top: 110,
@@ -227,13 +434,12 @@ function App() {
             left: 32,
           },
         },
-        maxBounds: swissBounds,
         attributionControl: false,
         pitch: 0,
         bearing: 0,
         config: {
           basemap: {
-            lightPreset: theme === "dark" ? "night" : "day",
+            lightPreset: "day",
             showPointOfInterestLabels: false,
             showTransitLabels: false,
             show3dObjects: false,
@@ -272,9 +478,9 @@ function App() {
         markerNode.className = "custom-marker";
         markerNode.setAttribute(
           "aria-label",
-          `${spot.name} in ${spot.city} for ${numberFormat.format(spot.price)}`,
+          `${spot.name} in ${spot.city} for ${formatPrice(spot.price)}`,
         );
-        markerNode.innerHTML = `<strong>${numberFormat.format(spot.price)}</strong>`;
+        markerNode.innerHTML = `<strong>${formatMarkerPrice(spot.price)}</strong>`;
 
         const marker = new mapboxgl.Marker({
           element: markerNode,
@@ -286,6 +492,7 @@ function App() {
         markerNode.addEventListener("click", (event) => {
           event.stopPropagation();
           setSelectedId(spot.id);
+          setSidebarOpen(true);
         });
 
         markersRef.current.set(spot.id, { marker, node: markerNode });
@@ -338,28 +545,17 @@ function App() {
     }
 
     return undefined;
-  }, [spots]);
-
-  useEffect(() => {
-    if (!mapInstanceRef.current || !mapReady) {
-      return;
-    }
-
-    mapInstanceRef.current.setConfigProperty(
-      "basemap",
-      "lightPreset",
-      theme === "dark" ? "night" : "day",
-    );
-  }, [theme, mapReady]);
+  }, [spots, datasetBounds]);
 
   useEffect(() => {
     markersRef.current.forEach(({ marker, node }, markerId) => {
       node.classList.toggle("is-selected", markerId === selectedVisibleSpot?.id);
       node.classList.toggle("is-visible", visibleIds.includes(markerId));
+      node.classList.toggle("is-cheapest", markerId === cheapestVisible?.id);
       marker.getElement().style.zIndex =
-        markerId === selectedVisibleSpot?.id ? "14" : "10";
+        markerId === selectedVisibleSpot?.id ? "14" : markerId === cheapestVisible?.id ? "12" : "10";
     });
-  }, [selectedVisibleSpot, visibleIds]);
+  }, [selectedVisibleSpot, visibleIds, cheapestVisible]);
 
   useEffect(() => {
     if (!selectedVisibleSpot || !mapInstanceRef.current || !popupRef.current) {
@@ -368,6 +564,16 @@ function App() {
     }
 
     const directionsUrl = buildDirectionsUrl(selectedVisibleSpot);
+    const isFlagged = selectedVisibleSpot.userFlagged === true;
+    const isFlagging = flaggingVenueId === selectedVisibleSpot.id;
+    const statusMessage = flagError
+      ? flagError
+      : isFlagged
+        ? "This price has been flagged."
+        : "";
+    const statusClassName = flagError
+      ? "info-window-status is-error"
+      : "info-window-status";
 
     popupRef.current.setHTML(`
       <div class="info-window">
@@ -382,13 +588,45 @@ function App() {
         <a class="info-window-link" href="${directionsUrl}" target="_blank" rel="noreferrer">
           Open in Google Maps
         </a>
+        ${isFlagged ? "" : `
+        <button
+          type="button"
+          class="info-window-secondary"
+          data-flag-price-button="true"
+          ${isFlagging ? "disabled" : ""}
+          aria-describedby="${popupStatusId}"
+        >
+          ${isFlagging ? "Flagging..." : "Flag wrong/outdated price"}
+        </button>
+        `}
+        <p id="${popupStatusId}" class="${statusClassName}">
+          ${statusMessage}
+        </p>
       </div>
     `);
 
     popupRef.current
       .setLngLat([selectedVisibleSpot.lng, selectedVisibleSpot.lat])
       .addTo(mapInstanceRef.current);
-  }, [selectedVisibleSpot]);
+
+    const popupNode = popupRef.current.getElement();
+    const flagButton = popupNode?.querySelector("[data-flag-price-button='true']");
+
+    if (!flagButton) {
+      return;
+    }
+
+    const handleFlagButtonClick = (event) => {
+      event.preventDefault();
+      handleFlagVenuePrice(selectedVisibleSpot.id);
+    };
+
+    flagButton.addEventListener("click", handleFlagButtonClick);
+
+    return () => {
+      flagButton.removeEventListener("click", handleFlagButtonClick);
+    };
+  }, [flagError, flaggingVenueId, popupStatusId, selectedVisibleSpot]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) {
@@ -408,20 +646,88 @@ function App() {
     };
   }, [sidebarOpen]);
 
+  useEffect(() => {
+    if (popupDismissed) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPopupVisible(true);
+    }, 10000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [popupDismissed]);
+
+  function handleClosePopup() {
+    setPopupVisible(false);
+    setPopupDismissed(true);
+  }
+
+  useEffect(() => {
+    setFlagError("");
+  }, [selectedId]);
+
   return (
     <div className="screen">
+      {showLoader ? (
+        <div
+          className={`loading-screen ${loaderExiting ? "is-complete" : ""}`.trim()}
+        >
+          <div className="loading-panel">
+            <img
+              className="loading-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <div className="loading-track" aria-hidden="true">
+              <div
+                className="loading-bar"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
+            <span className="loading-percent">
+              {Math.round(loadingProgress)}%
+            </span>
+          </div>
+        </div>
+      ) : null}
+
       <div ref={mapRef} className="map-canvas" />
       <div className="map-scrim" />
 
+      {popupVisible && activePopupAd ? (
+        <aside
+          className="event-popup"
+          aria-label="Sponsored event advertisement"
+        >
+          <button
+            type="button"
+            className="event-popup-close"
+            aria-label="Close advertisement"
+            onClick={handleClosePopup}
+          >
+            X
+          </button>
+          <div className="event-popup-copy">
+            <span className="event-popup-tag">Sponsored</span>
+            <h3>{activePopupContent.title}</h3>
+            <p>{activePopupContent.body}</p>
+          </div>
+          <div className="event-popup-media">
+            <img src={activePopupAd.src} alt={activePopupAd.alt} />
+          </div>
+        </aside>
+      ) : null}
+
       <header className="floating-topbar">
         <div className="brand">
-          <div className="brand-mark" aria-hidden="true">
-            <span />
-          </div>
-          <div>
-            <p className="brand-kicker">Switzerland</p>
-            <h1>Stange Check</h1>
-          </div>
+          <img
+            className="brand-logo"
+            src={logoLight}
+            alt="Stange Check"
+          />
         </div>
 
         <form className="search-shell" onSubmit={handleSearchSubmit}>
@@ -433,31 +739,13 @@ function App() {
             type="search"
             value={searchValue}
             onChange={(event) => setSearchValue(event.target.value)}
-            placeholder="Search visible venues, cities, or beer names"
+            placeholder="Search visible venues or beer names"
           />
         </form>
 
         <div className="topbar-actions">
           <button type="button" className="control-button" onClick={resetMapView}>
             Reset
-          </button>
-          <button
-            type="button"
-            className="control-button"
-            onClick={() =>
-              setTheme((currentTheme) =>
-                currentTheme === "dark" ? "light" : "dark",
-              )
-            }
-          >
-            {theme === "dark" ? "Light" : "Dark"}
-          </button>
-          <button
-            type="button"
-            className="control-button is-primary"
-            onClick={() => setSidebarOpen((currentState) => !currentState)}
-          >
-            {sidebarOpen ? "Hide list" : "Show list"}
           </button>
         </div>
       </header>
@@ -479,7 +767,11 @@ function App() {
         </div>
         <div className="stat-pill">
           <span>Average</span>
-          <strong>{numberFormat.format(averageVisiblePrice || 0)}</strong>
+          <strong>
+            {pricedVisibleSpots.length
+              ? numberFormat.format(averageVisiblePrice || 0)
+              : "None"}
+          </strong>
         </div>
       </div>
 
@@ -491,51 +783,87 @@ function App() {
         </div>
       ) : null}
 
-      <aside className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}>
-        <div className="sidebar-top">
-          <div>
-            <p className="sidebar-kicker">In current view</p>
-            <h2>Cheapest first</h2>
+      <div className="sidebar-dock">
+        <aside
+          className={`floating-sidebar ${sidebarOpen ? "" : "is-hidden"}`.trim()}
+        >
+          <div className="sidebar-top">
+            <div>
+              <h2>{filteredVisibleSpots.length} Prices found</h2>
+            </div>
+            <button
+              type="button"
+              className="sidebar-close"
+              aria-label="Close prices sidebar"
+              onClick={() => setSidebarOpen(false)}
+            >
+              X
+            </button>
           </div>
-          <div className="sidebar-count">{filteredVisibleSpots.length}</div>
-        </div>
 
-        <div className="sidebar-scroll">
-          {loading ? (
-            <div className="empty-card">Loading venues…</div>
-          ) : visibleSpots.length === 0 ? (
-            <div className="empty-card">
-              Move the map to bring bars and restaurants into view.
-            </div>
-          ) : filteredVisibleSpots.length === 0 ? (
-            <div className="empty-card">
-              No visible venues match your current search.
-            </div>
-          ) : (
-            <div className="results-list">
-              {filteredVisibleSpots.map((spot) => (
-                <button
-                  key={spot.id}
-                  type="button"
-                  className="result-card"
-                  onClick={() => focusSpot(spot)}
-                >
-                  <div className="result-main">
-                    <div className="result-topline">
-                      <h4>{spot.name}</h4>
-                      <strong>{numberFormat.format(spot.price)}</strong>
+          <div className="sidebar-scroll">
+            {loading ? (
+              <div className="empty-card">Loading venues…</div>
+            ) : loadError ? (
+              <div className="empty-card">
+                <strong>Venue data unavailable.</strong>
+                <p>{loadError}</p>
+              </div>
+            ) : visibleSpots.length === 0 ? (
+              <div className="empty-card">
+                Move the map to bring bars and restaurants into view.
+              </div>
+            ) : filteredVisibleSpots.length === 0 ? (
+              <div className="empty-card">
+                No visible venues match your current search.
+              </div>
+            ) : (
+              <div className="results-list">
+                {filteredVisibleSpots.map((spot) => (
+                  <button
+                    key={spot.id}
+                    type="button"
+                    className={`result-card ${spot.id === cheapestVisible?.id ? "is-cheapest" : ""}`.trim()}
+                    onClick={() => focusSpot(spot)}
+                  >
+                    <div className="result-main">
+                      <div className="result-topline">
+                        <h4>{spot.name}</h4>
+                        <strong>{formatPrice(spot.price)}</strong>
+                      </div>
+                      <p>
+                        {spot.city}, {spot.canton} · {spot.beer}
+                      </p>
+                      {spot.address ? <small><em>{spot.address}</em></small> : null}
                     </div>
-                    <p>
-                      {spot.city}, {spot.canton} · {spot.beer}
-                    </p>
-                    <small>{spot.vibe}</small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {activeAd ? (
+            <button
+              type="button"
+              className="sidebar-ad"
+              onClick={() => setActiveAdIndex((current) => getNextAdIndex(current))}
+            >
+              <img src={activeAd.src} alt={activeAd.alt} />
+            </button>
+          ) : null}
+        </aside>
+
+        {!sidebarOpen ? (
+          <button
+            type="button"
+            className="sidebar-tab"
+            aria-label="Show prices sidebar"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <span className="sidebar-tab-label">Prices</span>
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
