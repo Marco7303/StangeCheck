@@ -28,5 +28,15 @@ export async function querySupabase(path, init = {}) {
     throw new Error(errorText || `Supabase request failed with ${response.status}.`);
   }
 
-  return response.json();
+  if (response.status === 204) {
+    return null;
+  }
+
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return null;
+  }
+
+  return JSON.parse(responseText);
 }

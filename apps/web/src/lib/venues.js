@@ -24,15 +24,19 @@ function toUiVenue(row) {
     website: row.website ?? "",
     source: row.price_source ?? row.source ?? "",
     priceUpdatedAt: row.price_updated_at ?? null,
+    userFlagged: row.user_flagged === true,
   };
 }
 
-export async function listVenues() {
-  const hasSupabaseBrowserConfig =
+function hasSupabaseBrowserConfig() {
+  return (
     Boolean(import.meta.env.VITE_SUPABASE_URL) &&
-    Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
+    Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY)
+  );
+}
 
-  if (!hasSupabaseBrowserConfig) {
+export async function listVenues() {
+  if (!hasSupabaseBrowserConfig()) {
     return listBeerSpots();
   }
 
@@ -51,6 +55,7 @@ export async function listVenues() {
       "cheapest_lager_price_chf",
       "price_source",
       "price_updated_at",
+      "user_flagged",
     ].join(","),
     "lat": "not.is.null",
     "lng": "not.is.null",
@@ -64,5 +69,28 @@ export async function listVenues() {
   } catch (error) {
     console.warn("Supabase venue fetch failed, falling back to mock data.", error);
     return listBeerSpots();
+  }
+}
+
+export async function flagVenuePrice(venueId) {
+  if (!hasSupabaseBrowserConfig()) {
+    throw new Error("Supabase setup required to flag a price.");
+  }
+
+  const rows = await querySupabase(`venues?id=eq.${encodeURIComponent(venueId)}&select=id,user_flagged`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      user_flagged: true,
+    }),
+  });
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error(
+      "Supabase did not update the row. This is usually caused by a missing UPDATE policy on venues.",
+    );
   }
 }

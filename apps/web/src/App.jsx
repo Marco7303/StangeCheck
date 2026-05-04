@@ -1,13 +1,14 @@
 import {
   useDeferredValue,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
 import logoLight from "./assets/logo-light.svg";
-import { listVenues } from "./lib/venues";
+import { flagVenuePrice, listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
 const adBanners = Object.entries(
@@ -187,12 +188,15 @@ function App() {
   const [popupAdIndex] = useState(() =>
     popupAds.length ? Math.floor(Math.random() * popupAds.length) : 0,
   );
+  const [flaggingVenueId, setFlaggingVenueId] = useState(null);
+  const [flagError, setFlagError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [visibleIds, setVisibleIds] = useState([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const deferredSearch = useDeferredValue(searchValue);
+  const popupStatusId = useId();
   const loadStartedAtRef = useRef(Date.now());
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -371,6 +375,30 @@ function App() {
     }
   }
 
+  async function handleFlagVenuePrice(venueId) {
+    if (!venueId || flaggingVenueId === venueId) {
+      return;
+    }
+
+    setFlaggingVenueId(venueId);
+    setFlagError("");
+
+    try {
+      await flagVenuePrice(venueId);
+      setSpots((currentSpots) =>
+        currentSpots.map((spot) =>
+          spot.id === venueId ? { ...spot, userFlagged: true } : spot,
+        ),
+      );
+    } catch (error) {
+      setFlagError(
+        error instanceof Error ? error.message : "Unable to flag this price.",
+      );
+    } finally {
+      setFlaggingVenueId(null);
+    }
+  }
+
   useEffect(() => {
     if (!spots.length) {
       return;
@@ -536,6 +564,16 @@ function App() {
     }
 
     const directionsUrl = buildDirectionsUrl(selectedVisibleSpot);
+    const isFlagged = selectedVisibleSpot.userFlagged === true;
+    const isFlagging = flaggingVenueId === selectedVisibleSpot.id;
+    const statusMessage = flagError
+      ? flagError
+      : isFlagged
+        ? "This price has been flagged."
+        : "";
+    const statusClassName = flagError
+      ? "info-window-status is-error"
+      : "info-window-status";
 
     popupRef.current.setHTML(`
       <div class="info-window">
@@ -550,13 +588,45 @@ function App() {
         <a class="info-window-link" href="${directionsUrl}" target="_blank" rel="noreferrer">
           Open in Google Maps
         </a>
+        ${isFlagged ? "" : `
+        <button
+          type="button"
+          class="info-window-secondary"
+          data-flag-price-button="true"
+          ${isFlagging ? "disabled" : ""}
+          aria-describedby="${popupStatusId}"
+        >
+          ${isFlagging ? "Flagging..." : "Flag wrong/outdated price"}
+        </button>
+        `}
+        <p id="${popupStatusId}" class="${statusClassName}">
+          ${statusMessage}
+        </p>
       </div>
     `);
 
     popupRef.current
       .setLngLat([selectedVisibleSpot.lng, selectedVisibleSpot.lat])
       .addTo(mapInstanceRef.current);
-  }, [selectedVisibleSpot]);
+
+    const popupNode = popupRef.current.getElement();
+    const flagButton = popupNode?.querySelector("[data-flag-price-button='true']");
+
+    if (!flagButton) {
+      return;
+    }
+
+    const handleFlagButtonClick = (event) => {
+      event.preventDefault();
+      handleFlagVenuePrice(selectedVisibleSpot.id);
+    };
+
+    flagButton.addEventListener("click", handleFlagButtonClick);
+
+    return () => {
+      flagButton.removeEventListener("click", handleFlagButtonClick);
+    };
+  }, [flagError, flaggingVenueId, popupStatusId, selectedVisibleSpot]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) {
@@ -594,6 +664,10 @@ function App() {
     setPopupVisible(false);
     setPopupDismissed(true);
   }
+
+  useEffect(() => {
+    setFlagError("");
+  }, [selectedId]);
 
   return (
     <div className="screen">
