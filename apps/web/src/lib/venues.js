@@ -4,6 +4,11 @@ import { listBeerSpots } from "./mockDb";
 function toUiVenue(row) {
   const price = Number(row.cheapest_lager_price_chf);
   const hasPrice = Number.isFinite(price);
+  const beerName =
+    typeof row.cheapest_lager_name === "string" &&
+    row.cheapest_lager_name.trim()
+      ? row.cheapest_lager_name.trim()
+      : null;
   const evidence =
     typeof row.website_price_evidence === "string" &&
     row.website_price_evidence.trim()
@@ -19,7 +24,7 @@ function toUiVenue(row) {
     lat: Number(row.lat),
     lng: Number(row.lng),
     price: hasPrice ? price : null,
-    beer: row.cheapest_lager_name ?? "Lager price pending",
+    beer: beerName ?? (hasPrice ? "Beer name unavailable" : "Lager price pending"),
     vibe: evidence,
     website: row.website ?? "",
     source: row.price_source ?? row.source ?? "",

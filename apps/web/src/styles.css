@@ -1020,7 +1020,31 @@ button {
 
 @media (max-width: 760px) {
   .floating-topbar {
-    padding: 12px;
+    gap: 10px;
+    padding: 10px 12px 14px;
+  }
+
+  .brand {
+    justify-content: center;
+    align-self: auto;
+  }
+
+  .brand-logo {
+    width: min(100%, 220px);
+    max-height: 44px;
+  }
+
+  .search-shell {
+    width: 100%;
+  }
+
+  .search-shell input {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+
+  .topbar-actions {
+    display: none;
   }
 
   .age-gate,
@@ -1048,7 +1072,8 @@ button {
   .event-popup {
     top: 134px;
     left: 12px;
-    width: min(320px, calc(100vw - 24px));
+    right: 12px;
+    width: auto;
     padding: 14px;
   }
 
@@ -1075,15 +1100,14 @@ button {
   .sidebar-tab {
     top: auto;
     right: 16px;
-    bottom: 100%;
+    bottom: calc(100% + 18px);
     transform: translateY(0);
     writing-mode: horizontal-tb;
     min-height: 0;
     min-width: 120px;
     justify-content: center;
     padding: 10px 14px;
-    border-right: 1px solid var(--accent);
-    border-bottom: none;
+    border: 1px solid var(--accent);
   }
 
 
@@ -1095,10 +1119,7 @@ button {
   }
 
   .floating-stats {
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: none;
   }
 
   .result-topline {
@@ -1108,6 +1129,6 @@ button {
 
   .mapboxgl-ctrl-bottom-left {
     left: 12px;
-    bottom: 246px;
+    bottom: 12px;
   }
 }
