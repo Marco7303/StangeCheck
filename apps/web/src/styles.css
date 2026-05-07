@@ -1077,11 +1077,13 @@ button {
 
 @media (max-width: 760px) {
   body {
-    background: var(--bg);
+    background: #ffffff;
   }
 
   .screen {
-    background: transparent;
+    height: 100dvh;
+    min-height: 100dvh;
+    background: var(--bg);
   }
 
   .floating-topbar {
