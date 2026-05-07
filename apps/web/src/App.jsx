@@ -12,7 +12,7 @@ import { flagVenuePrice, listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
 const adBanners = Object.entries(
-  import.meta.glob("./assets/ad-banners/*.{png,jpg,jpeg,webp}", {
+  import.meta.glob("./assets/ad-banners/*-compressed.{png,jpg,jpeg,webp}", {
     eager: true,
     import: "default",
   }),
