@@ -1077,7 +1077,7 @@ button {
 
 @media (max-width: 760px) {
   body {
-    background: #ffffff;
+    background: var(--bg);
   }
 
   .screen {
@@ -1087,11 +1087,22 @@ button {
   }
 
   .floating-topbar {
+    position: absolute;
     gap: 10px;
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       12px
       14px;
+  }
+
+  .floating-topbar::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #ffffff;
   }
 
   .brand {
