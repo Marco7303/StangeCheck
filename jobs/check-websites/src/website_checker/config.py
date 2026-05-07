@@ -30,8 +30,6 @@ MAX_BLOCK_TEXT_CHARS = 3000
 SCROLL_STEPS = 6
 SCROLL_PAUSE_SECONDS = 0.35
 REQUEST_TIMEOUT_SECONDS = 20
-DEBUG_ARTIFACTS_ENABLED = os.environ.get("CHECK_WEBSITES_DEBUG", "1") != "0"
-DEBUG_ARTIFACTS_ROOT = REPO_ROOT / "jobs" / "check-websites" / "debug"
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "

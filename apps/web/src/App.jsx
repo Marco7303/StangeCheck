@@ -12,7 +12,7 @@ import { flagVenuePrice, listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
 const adBanners = Object.entries(
-  import.meta.glob("./assets/ad-banners/*.{png,jpg,jpeg,webp}", {
+  import.meta.glob("./assets/spotlight-panels/*-spotlight.{png,jpg,jpeg,webp}", {
     eager: true,
     import: "default",
   }),
@@ -174,7 +174,30 @@ function buildDirectionsUrl(spot) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
 }
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function getMapViewportPadding(sidebarOpen) {
+  if (isMobileViewport()) {
+    return {
+      top: 108,
+      right: 20,
+      bottom: sidebarOpen ? 300 : 88,
+      left: 20,
+    };
+  }
+
+  return {
+    top: 110,
+    right: sidebarOpen ? 430 : 32,
+    bottom: 42,
+    left: 32,
+  };
+}
+
 function App() {
+  const [ageGateStatus, setAgeGateStatus] = useState("pending");
   const [spots, setSpots] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -357,12 +380,7 @@ function App() {
     }
 
     mapInstanceRef.current.fitBounds(datasetBounds, {
-      padding: {
-        top: 110,
-        right: sidebarOpen ? 430 : 32,
-        bottom: 42,
-        left: 32,
-      },
+      padding: getMapViewportPadding(sidebarOpen),
       duration: 700,
     });
   }
@@ -427,12 +445,7 @@ function App() {
         style: "mapbox://styles/mapbox/standard",
         bounds: datasetBounds,
         fitBoundsOptions: {
-          padding: {
-            top: 110,
-            right: 430,
-            bottom: 42,
-            left: 32,
-          },
+          padding: getMapViewportPadding(sidebarOpen),
         },
         attributionControl: false,
         pitch: 0,
@@ -492,7 +505,7 @@ function App() {
         markerNode.addEventListener("click", (event) => {
           event.stopPropagation();
           setSelectedId(spot.id);
-          setSidebarOpen(true);
+          setSidebarOpen(!isMobileViewport());
         });
 
         markersRef.current.set(spot.id, { marker, node: markerNode });
@@ -579,7 +592,6 @@ function App() {
       <div class="info-window">
         <div class="info-window-head">
           <div>
-            <p class="info-window-kicker">${selectedVisibleSpot.city}, ${selectedVisibleSpot.canton}</p>
             <strong>${selectedVisibleSpot.name}</strong>
           </div>
         </div>
@@ -647,7 +659,7 @@ function App() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    if (popupDismissed) {
+    if (showLoader || ageGateStatus !== "accepted" || popupDismissed) {
       return;
     }
 
@@ -658,11 +670,20 @@ function App() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [popupDismissed]);
+  }, [ageGateStatus, popupDismissed, showLoader]);
 
   function handleClosePopup() {
     setPopupVisible(false);
     setPopupDismissed(true);
+  }
+
+  function handleAgeAccepted() {
+    setAgeGateStatus("accepted");
+  }
+
+  function handleAgeDenied() {
+    setAgeGateStatus("denied");
+    setPopupVisible(false);
   }
 
   useEffect(() => {
@@ -692,6 +713,29 @@ function App() {
             </span>
           </div>
         </div>
+      ) : null}
+
+      {!showLoader && ageGateStatus === "denied" ? (
+        <section className="age-blocked-screen">
+          <div className="age-blocked-panel">
+            <img
+              className="age-blocked-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <div className="age-blocked-copy">
+              <h1>You cannot access this site yet.</h1>
+              <p>
+                Under Swiss law, this website is only intended for people aged
+                16 and over because it contains alcohol-related content.
+              </p>
+              <p>
+                We will be happy to welcome you back once you have reached the
+                required age.
+              </p>
+            </div>
+          </div>
+        </section>
       ) : null}
 
       <div ref={mapRef} className="map-canvas" />
@@ -831,9 +875,7 @@ function App() {
                         <h4>{spot.name}</h4>
                         <strong>{formatPrice(spot.price)}</strong>
                       </div>
-                      <p>
-                        {spot.city}, {spot.canton} · {spot.beer}
-                      </p>
+                      <p>{spot.beer}</p>
                       {spot.address ? <small><em>{spot.address}</em></small> : null}
                     </div>
                   </button>
@@ -845,7 +887,7 @@ function App() {
           {activeAd ? (
             <button
               type="button"
-              className="sidebar-ad"
+              className="sidebar-spotlight"
               onClick={() => setActiveAdIndex((current) => getNextAdIndex(current))}
             >
               <img src={activeAd.src} alt={activeAd.alt} />
@@ -864,6 +906,39 @@ function App() {
           </button>
         ) : null}
       </div>
+
+      {!showLoader && ageGateStatus === "pending" ? (
+        <div className="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+          <div className="age-gate-panel">
+            <img
+              className="age-gate-logo"
+              src={logoLight}
+              alt="Stange Check"
+            />
+            <h2 id="age-gate-title">Are you 16 or older?</h2>
+            <p>
+              Stange Check shows alcohol-related content and is only available
+              to users aged 16+ in Switzerland.
+            </p>
+            <div className="age-gate-actions">
+              <button
+                type="button"
+                className="control-button is-primary"
+                onClick={handleAgeAccepted}
+              >
+                Yes, I am 16+
+              </button>
+              <button
+                type="button"
+                className="control-button"
+                onClick={handleAgeDenied}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -434,22 +434,9 @@ def crawl_site(start_url: str) -> CrawlResult:
         seen.add(key)
         deduped_documents.append(document)
 
-    ranked_html = sorted(html_candidates.items(), key=lambda item: item[1], reverse=True)
-    debug = {
-        "start_url": start_url,
-        "visited_pages": visit_order,
-        "ranked_html_candidates": [{"url": url, "score": score} for url, score in ranked_html],
-        "ranked_pdf_candidates": [{"url": url, "score": score} for url, score in ranked_pdfs],
-        "ranked_image_candidates": [{"url": url, "score": score} for url, score in ranked_images],
-        "selected_pdf_urls": pdf_urls,
-        "selected_image_urls": image_urls,
-        "crawl_errors": errors,
-    }
-
     return CrawlResult(
         html_documents=deduped_documents,
         pdf_urls=pdf_urls,
         image_urls=image_urls,
         errors=errors,
-        debug=debug,
     )

@@ -36,4 +36,3 @@ class CrawlResult:
     pdf_urls: list[str]
     image_urls: list[str]
     errors: list[str]
-    debug: dict
