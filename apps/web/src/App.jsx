@@ -178,6 +178,10 @@ function isMobileViewport() {
   return window.matchMedia("(max-width: 760px)").matches;
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 function getMapViewportPadding(sidebarOpen) {
   if (isMobileViewport()) {
     return {
@@ -194,6 +198,26 @@ function getMapViewportPadding(sidebarOpen) {
     bottom: 42,
     left: 32,
   };
+}
+
+function getInsetSize(containerRect, overlayRect, edge) {
+  if (!overlayRect) {
+    return 0;
+  }
+
+  if (edge === "top") {
+    return Math.max(overlayRect.bottom - containerRect.top, 0);
+  }
+
+  if (edge === "right") {
+    return Math.max(containerRect.right - overlayRect.left, 0);
+  }
+
+  if (edge === "bottom") {
+    return Math.max(containerRect.bottom - overlayRect.top, 0);
+  }
+
+  return 0;
 }
 
 function App() {
@@ -222,6 +246,7 @@ function App() {
   const popupStatusId = useId();
   const loadStartedAtRef = useRef(Date.now());
   const mapRef = useRef(null);
+  const topbarRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef(new Map());
   const popupRef = useRef(null);
@@ -342,14 +367,31 @@ function App() {
   const visibleCities = new Set(filteredVisibleSpots.map((spot) => spot.city)).size;
 
   function syncVisibleSpots(map) {
-    const bounds = map.getBounds();
+    const container = map.getContainer();
 
-    if (!bounds) {
+    if (!container) {
       return;
     }
 
+    const containerRect = container.getBoundingClientRect();
+    const topbarRect = topbarRef.current?.getBoundingClientRect() ?? null;
+    const topInset = getInsetSize(containerRect, topbarRect, "top");
+    const minX = 0;
+    const maxX = containerRect.width;
+    const minY = topInset;
+    const maxY = containerRect.height;
+
     const nextVisibleIds = spots
-      .filter((spot) => bounds.contains([spot.lng, spot.lat]))
+      .filter((spot) => {
+        const point = map.project([spot.lng, spot.lat]);
+
+        return (
+          point.x >= minX &&
+          point.x <= maxX &&
+          point.y >= minY &&
+          point.y <= maxY
+        );
+      })
       .map((spot) => spot.id)
       .sort();
 
@@ -443,6 +485,7 @@ function App() {
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/standard",
+        projection: "mercator",
         bounds: datasetBounds,
         fitBoundsOptions: {
           padding: getMapViewportPadding(sidebarOpen),
@@ -462,6 +505,7 @@ function App() {
 
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
+      map.scrollZoom.disable();
       map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-left");
       mapInstanceRef.current = map;
       popupRef.current = new mapboxgl.Popup({
@@ -483,6 +527,33 @@ function App() {
         }
 
         setSelectedId(null);
+      };
+      const handleWheelZoom = (event) => {
+        const originalEvent = event.originalEvent;
+
+        if (!(originalEvent instanceof WheelEvent)) {
+          return;
+        }
+
+        originalEvent.preventDefault();
+
+        const delta = clamp(-originalEvent.deltaY * 0.0015, -1.2, 1.2);
+        const nextZoom = clamp(
+          map.getZoom() + delta,
+          map.getMinZoom(),
+          map.getMaxZoom(),
+        );
+
+        if (nextZoom === map.getZoom()) {
+          return;
+        }
+
+        map.easeTo({
+          zoom: nextZoom,
+          around: map.unproject([originalEvent.offsetX, originalEvent.offsetY]),
+          duration: 0,
+          essential: true,
+        });
       };
 
       spots.forEach((spot) => {
@@ -523,6 +594,7 @@ function App() {
 
       map.on("move", updateVisibleSpots);
       map.on("moveend", updateVisibleSpots);
+      map.on("wheel", handleWheelZoom);
       map.getCanvasContainer().addEventListener("click", handleMapSurfaceClick);
       map.on("error", (event) => {
         if (cancelled || mapReady) {
@@ -543,6 +615,7 @@ function App() {
         map
           .getCanvasContainer()
           .removeEventListener("click", handleMapSurfaceClick);
+        map.off("wheel", handleWheelZoom);
         markersRef.current.forEach(({ marker }) => marker.remove());
         markersRef.current.clear();
         map.remove();
@@ -569,6 +642,14 @@ function App() {
         markerId === selectedVisibleSpot?.id ? "14" : markerId === cheapestVisible?.id ? "12" : "10";
     });
   }, [selectedVisibleSpot, visibleIds, cheapestVisible]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) {
+      return;
+    }
+
+    syncVisibleSpots(mapInstanceRef.current);
+  }, [sidebarOpen, spots]);
 
   useEffect(() => {
     if (!selectedVisibleSpot || !mapInstanceRef.current || !popupRef.current) {
@@ -765,7 +846,7 @@ function App() {
         </aside>
       ) : null}
 
-      <header className="floating-topbar">
+      <header ref={topbarRef} className="floating-topbar">
         <div className="brand">
           <img
             className="brand-logo"
@@ -791,6 +872,15 @@ function App() {
           <button type="button" className="control-button" onClick={resetMapView}>
             Reset
           </button>
+          {!sidebarOpen ? (
+            <button
+              type="button"
+              className="control-button control-button-prices"
+              onClick={() => setSidebarOpen(true)}
+            >
+              Prices
+            </button>
+          ) : null}
         </div>
       </header>
 
