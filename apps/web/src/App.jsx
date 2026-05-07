@@ -791,6 +791,15 @@ function App() {
           <button type="button" className="control-button" onClick={resetMapView}>
             Reset
           </button>
+          {!sidebarOpen ? (
+            <button
+              type="button"
+              className="control-button control-button-prices"
+              onClick={() => setSidebarOpen(true)}
+            >
+              Prices
+            </button>
+          ) : null}
         </div>
       </header>
 
