@@ -200,6 +200,26 @@ function getMapViewportPadding(sidebarOpen) {
   };
 }
 
+function getInsetSize(containerRect, overlayRect, edge) {
+  if (!overlayRect) {
+    return 0;
+  }
+
+  if (edge === "top") {
+    return Math.max(overlayRect.bottom - containerRect.top, 0);
+  }
+
+  if (edge === "right") {
+    return Math.max(containerRect.right - overlayRect.left, 0);
+  }
+
+  if (edge === "bottom") {
+    return Math.max(containerRect.bottom - overlayRect.top, 0);
+  }
+
+  return 0;
+}
+
 function App() {
   const [ageGateStatus, setAgeGateStatus] = useState("pending");
   const [spots, setSpots] = useState([]);
@@ -226,6 +246,7 @@ function App() {
   const popupStatusId = useId();
   const loadStartedAtRef = useRef(Date.now());
   const mapRef = useRef(null);
+  const topbarRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef(new Map());
   const popupRef = useRef(null);
@@ -346,14 +367,31 @@ function App() {
   const visibleCities = new Set(filteredVisibleSpots.map((spot) => spot.city)).size;
 
   function syncVisibleSpots(map) {
-    const bounds = map.getBounds();
+    const container = map.getContainer();
 
-    if (!bounds) {
+    if (!container) {
       return;
     }
 
+    const containerRect = container.getBoundingClientRect();
+    const topbarRect = topbarRef.current?.getBoundingClientRect() ?? null;
+    const topInset = getInsetSize(containerRect, topbarRect, "top");
+    const minX = 0;
+    const maxX = containerRect.width;
+    const minY = topInset;
+    const maxY = containerRect.height;
+
     const nextVisibleIds = spots
-      .filter((spot) => bounds.contains([spot.lng, spot.lat]))
+      .filter((spot) => {
+        const point = map.project([spot.lng, spot.lat]);
+
+        return (
+          point.x >= minX &&
+          point.x <= maxX &&
+          point.y >= minY &&
+          point.y <= maxY
+        );
+      })
       .map((spot) => spot.id)
       .sort();
 
@@ -606,6 +644,14 @@ function App() {
   }, [selectedVisibleSpot, visibleIds, cheapestVisible]);
 
   useEffect(() => {
+    if (!mapInstanceRef.current) {
+      return;
+    }
+
+    syncVisibleSpots(mapInstanceRef.current);
+  }, [sidebarOpen, spots]);
+
+  useEffect(() => {
     if (!selectedVisibleSpot || !mapInstanceRef.current || !popupRef.current) {
       popupRef.current?.remove();
       return;
@@ -800,7 +846,7 @@ function App() {
         </aside>
       ) : null}
 
-      <header className="floating-topbar">
+      <header ref={topbarRef} className="floating-topbar">
         <div className="brand">
           <img
             className="brand-logo"
