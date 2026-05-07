@@ -178,6 +178,10 @@ function isMobileViewport() {
   return window.matchMedia("(max-width: 760px)").matches;
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 function getMapViewportPadding(sidebarOpen) {
   if (isMobileViewport()) {
     return {
@@ -443,6 +447,7 @@ function App() {
       const map = new mapboxgl.Map({
         container: mapRef.current,
         style: "mapbox://styles/mapbox/standard",
+        projection: "mercator",
         bounds: datasetBounds,
         fitBoundsOptions: {
           padding: getMapViewportPadding(sidebarOpen),
@@ -462,6 +467,7 @@ function App() {
 
       map.dragRotate.disable();
       map.touchZoomRotate.disableRotation();
+      map.scrollZoom.disable();
       map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-left");
       mapInstanceRef.current = map;
       popupRef.current = new mapboxgl.Popup({
@@ -483,6 +489,33 @@ function App() {
         }
 
         setSelectedId(null);
+      };
+      const handleWheelZoom = (event) => {
+        const originalEvent = event.originalEvent;
+
+        if (!(originalEvent instanceof WheelEvent)) {
+          return;
+        }
+
+        originalEvent.preventDefault();
+
+        const delta = clamp(-originalEvent.deltaY * 0.0015, -1.2, 1.2);
+        const nextZoom = clamp(
+          map.getZoom() + delta,
+          map.getMinZoom(),
+          map.getMaxZoom(),
+        );
+
+        if (nextZoom === map.getZoom()) {
+          return;
+        }
+
+        map.easeTo({
+          zoom: nextZoom,
+          around: map.unproject([originalEvent.offsetX, originalEvent.offsetY]),
+          duration: 0,
+          essential: true,
+        });
       };
 
       spots.forEach((spot) => {
@@ -523,6 +556,7 @@ function App() {
 
       map.on("move", updateVisibleSpots);
       map.on("moveend", updateVisibleSpots);
+      map.on("wheel", handleWheelZoom);
       map.getCanvasContainer().addEventListener("click", handleMapSurfaceClick);
       map.on("error", (event) => {
         if (cancelled || mapReady) {
@@ -543,6 +577,7 @@ function App() {
         map
           .getCanvasContainer()
           .removeEventListener("click", handleMapSurfaceClick);
+        map.off("wheel", handleWheelZoom);
         markersRef.current.forEach(({ marker }) => marker.remove());
         markersRef.current.clear();
         map.remove();
