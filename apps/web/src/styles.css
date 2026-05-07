@@ -1077,7 +1077,7 @@ button {
 
 @media (max-width: 760px) {
   body {
-    background: var(--bg);
+    background: #ffffff;
   }
 
   .screen {
@@ -1087,22 +1087,11 @@ button {
   }
 
   .floating-topbar {
-    position: absolute;
     gap: 10px;
     padding:
       calc(env(safe-area-inset-top, 0px) + 10px)
       12px
       14px;
-  }
-
-  .floating-topbar::before {
-    content: "";
-    position: absolute;
-    top: calc(-1 * env(safe-area-inset-top, 0px));
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 0px);
-    background: #ffffff;
   }
 
   .brand {
@@ -1160,11 +1149,16 @@ button {
 
   .floating-sidebar {
     top: auto;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: auto;
-    max-height: 56vh;
+    max-height: 62vh;
+    padding: 14px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+    border-radius: 28px 28px 0 0;
   }
 
   .floating-sidebar.is-hidden {
@@ -1173,35 +1167,67 @@ button {
 
   .sidebar-dock {
     top: auto;
-    left: 12px;
+    left: 0;
     right: 0;
-    bottom: 12px;
+    bottom: 0;
   }
 
   .sidebar-tab {
     display: inline-flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     top: auto;
-    right: 16px;
-    bottom: calc(100% + 18px);
+    right: auto;
     transform: translateY(0);
-    writing-mode: horizontal-tb;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
     min-height: 0;
-    min-width: 120px;
-    justify-content: center;
-    padding: 10px 14px;
-    border: 1px solid var(--accent);
-    background: #da042c;
-    color: #ffffff;
+    padding: 10px 18px calc(env(safe-area-inset-bottom, 0px) + 18px);
+    border: none;
+    background: #ffffff;
+    color: var(--text);
+    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.12);
+    border-radius: 28px 28px 0 0;
+    writing-mode: horizontal-tb;
+    text-align: center;
   }
 
   .sidebar-tab:hover {
-    border-color: #da042c;
-    background: #b90324;
+    background: #ffffff;
+  }
+
+  .sidebar-tab-handle {
+    display: block;
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(20, 20, 20, 0.18);
+  }
+
+  .sidebar-tab-copy {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
   }
 
   .sidebar-tab-label {
-    color: #ffffff;
+    color: #da042c;
+    font-size: 1rem;
     font-weight: 700;
+  }
+
+  .sidebar-tab-copy strong {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0;
+    text-transform: none;
   }
 
 
@@ -1223,6 +1249,6 @@ button {
 
   .mapboxgl-ctrl-bottom-left {
     left: 12px;
-    bottom: 12px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 94px);
   }
 }
