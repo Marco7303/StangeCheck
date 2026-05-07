@@ -12,7 +12,7 @@ import { flagVenuePrice, listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
 const adBanners = Object.entries(
-  import.meta.glob("./assets/ad-banners/*-compressed.{png,jpg,jpeg,webp}", {
+  import.meta.glob("./assets/spotlight-panels/*-spotlight.{png,jpg,jpeg,webp}", {
     eager: true,
     import: "default",
   }),
@@ -887,7 +887,7 @@ function App() {
           {activeAd ? (
             <button
               type="button"
-              className="sidebar-ad"
+              className="sidebar-spotlight"
               onClick={() => setActiveAdIndex((current) => getNextAdIndex(current))}
             >
               <img src={activeAd.src} alt={activeAd.alt} />

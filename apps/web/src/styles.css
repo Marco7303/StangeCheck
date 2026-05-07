@@ -642,7 +642,7 @@ button {
   color: #ffffff;
 }
 
-.sidebar-ad {
+.sidebar-spotlight {
   padding: 0;
   border: none;
   background: transparent;
@@ -650,7 +650,7 @@ button {
   cursor: default;
 }
 
-.sidebar-ad img {
+.sidebar-spotlight img {
   display: block;
   width: 100%;
   height: auto;
