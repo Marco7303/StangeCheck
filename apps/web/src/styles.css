@@ -593,22 +593,25 @@ button {
   padding: 12px 10px 12px 12px;
   border: 1px solid var(--accent);
   border-right: none;
-  background: #ffffff;
-  color: var(--text);
+  background: #da042c;
+  color: #ffffff;
   box-shadow: var(--shadow);
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  transition: transform 220ms ease, border-color 160ms ease;
+  transition: transform 220ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .sidebar-tab:hover {
   border-color: #da042c;
+  background: #b90324;
 }
 
 .sidebar-tab-label {
   font-family: "Oswald", sans-serif;
   font-size: 0.95rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
+  color: #ffffff;
   text-transform: uppercase;
 }
 
