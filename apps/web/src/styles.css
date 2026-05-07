@@ -1108,6 +1108,18 @@ button {
     justify-content: center;
     padding: 10px 14px;
     border: 1px solid var(--accent);
+    background: #da042c;
+    color: #ffffff;
+  }
+
+  .sidebar-tab:hover {
+    border-color: #da042c;
+    background: #b90324;
+  }
+
+  .sidebar-tab-label {
+    color: #ffffff;
+    font-weight: 700;
   }
 
 
