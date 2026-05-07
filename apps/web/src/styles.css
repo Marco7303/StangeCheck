@@ -1076,9 +1076,17 @@ button {
 }
 
 @media (max-width: 760px) {
+  body,
+  .screen {
+    background: #ffffff;
+  }
+
   .floating-topbar {
     gap: 10px;
-    padding: 10px 12px 14px;
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 10px)
+      12px
+      14px;
   }
 
   .brand {
