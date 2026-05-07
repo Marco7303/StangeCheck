@@ -174,6 +174,28 @@ function buildDirectionsUrl(spot) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
 }
 
+function isMobileViewport() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function getMapViewportPadding(sidebarOpen) {
+  if (isMobileViewport()) {
+    return {
+      top: 108,
+      right: 20,
+      bottom: sidebarOpen ? 300 : 88,
+      left: 20,
+    };
+  }
+
+  return {
+    top: 110,
+    right: sidebarOpen ? 430 : 32,
+    bottom: 42,
+    left: 32,
+  };
+}
+
 function App() {
   const [ageGateStatus, setAgeGateStatus] = useState("pending");
   const [spots, setSpots] = useState([]);
@@ -358,12 +380,7 @@ function App() {
     }
 
     mapInstanceRef.current.fitBounds(datasetBounds, {
-      padding: {
-        top: 110,
-        right: sidebarOpen ? 430 : 32,
-        bottom: 42,
-        left: 32,
-      },
+      padding: getMapViewportPadding(sidebarOpen),
       duration: 700,
     });
   }
@@ -428,12 +445,7 @@ function App() {
         style: "mapbox://styles/mapbox/standard",
         bounds: datasetBounds,
         fitBoundsOptions: {
-          padding: {
-            top: 110,
-            right: 430,
-            bottom: 42,
-            left: 32,
-          },
+          padding: getMapViewportPadding(sidebarOpen),
         },
         attributionControl: false,
         pitch: 0,
@@ -493,7 +505,7 @@ function App() {
         markerNode.addEventListener("click", (event) => {
           event.stopPropagation();
           setSelectedId(spot.id);
-          setSidebarOpen(true);
+          setSidebarOpen(!isMobileViewport());
         });
 
         markersRef.current.set(spot.id, { marker, node: markerNode });
@@ -580,7 +592,6 @@ function App() {
       <div class="info-window">
         <div class="info-window-head">
           <div>
-            <p class="info-window-kicker">${selectedVisibleSpot.city}, ${selectedVisibleSpot.canton}</p>
             <strong>${selectedVisibleSpot.name}</strong>
           </div>
         </div>
@@ -864,9 +875,7 @@ function App() {
                         <h4>{spot.name}</h4>
                         <strong>{formatPrice(spot.price)}</strong>
                       </div>
-                      <p>
-                        {spot.city}, {spot.canton} · {spot.beer}
-                      </p>
+                      <p>{spot.beer}</p>
                       {spot.address ? <small><em>{spot.address}</em></small> : null}
                     </div>
                   </button>
