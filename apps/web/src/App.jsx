@@ -992,7 +992,11 @@ function App() {
             aria-label="Show prices sidebar"
             onClick={() => setSidebarOpen(true)}
           >
-            <span className="sidebar-tab-label">Prices</span>
+            <span className="sidebar-tab-handle" aria-hidden="true" />
+            <span className="sidebar-tab-copy">
+              <span className="sidebar-tab-label">Prices</span>
+              <strong>{filteredVisibleSpots.length} in view</strong>
+            </span>
           </button>
         ) : null}
       </div>
