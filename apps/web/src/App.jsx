@@ -8,6 +8,9 @@ import {
 } from "react";
 import mapboxgl from "mapbox-gl";
 import logoLight from "./assets/logo-light.svg";
+import planeBanner from "./assets/landing-page/sc-plane.png";
+import techstackGraphic from "./assets/landing-page/sc-techstack.png";
+import priceIncreaseGraphic from "./assets/landing-page/st-increased-price.png";
 import { flagVenuePrice, listVenues } from "./lib/venues";
 
 const minimumLoaderMs = 2000;
@@ -221,12 +224,13 @@ function getInsetSize(containerRect, overlayRect, edge) {
 }
 
 function App() {
+  const [appStarted, setAppStarted] = useState(false);
   const [ageGateStatus, setAgeGateStatus] = useState("pending");
   const [spots, setSpots] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [showLoader, setShowLoader] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
   const [loaderExiting, setLoaderExiting] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(10);
   const [activeAdIndex, setActiveAdIndex] = useState(() => getRandomAdIndex());
@@ -253,6 +257,10 @@ function App() {
   const visibleIdsRef = useRef([]);
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     let active = true;
     loadStartedAtRef.current = Date.now();
 
@@ -291,7 +299,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appStarted]);
 
   useEffect(() => {
     if (!loading) {
@@ -460,6 +468,10 @@ function App() {
   }
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     if (!spots.length) {
       return;
     }
@@ -631,9 +643,13 @@ function App() {
     }
 
     return undefined;
-  }, [spots, datasetBounds]);
+  }, [appStarted, spots, datasetBounds]);
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     markersRef.current.forEach(({ marker, node }, markerId) => {
       node.classList.toggle("is-selected", markerId === selectedVisibleSpot?.id);
       node.classList.toggle("is-visible", visibleIds.includes(markerId));
@@ -641,17 +657,25 @@ function App() {
       marker.getElement().style.zIndex =
         markerId === selectedVisibleSpot?.id ? "14" : markerId === cheapestVisible?.id ? "12" : "10";
     });
-  }, [selectedVisibleSpot, visibleIds, cheapestVisible]);
+  }, [appStarted, selectedVisibleSpot, visibleIds, cheapestVisible]);
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     if (!mapInstanceRef.current) {
       return;
     }
 
     syncVisibleSpots(mapInstanceRef.current);
-  }, [sidebarOpen, spots]);
+  }, [appStarted, sidebarOpen, spots]);
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     if (!selectedVisibleSpot || !mapInstanceRef.current || !popupRef.current) {
       popupRef.current?.remove();
       return;
@@ -719,9 +743,13 @@ function App() {
     return () => {
       flagButton.removeEventListener("click", handleFlagButtonClick);
     };
-  }, [flagError, flaggingVenueId, popupStatusId, selectedVisibleSpot]);
+  }, [appStarted, flagError, flaggingVenueId, popupStatusId, selectedVisibleSpot]);
 
   useEffect(() => {
+    if (!appStarted) {
+      return;
+    }
+
     if (!mapInstanceRef.current) {
       return;
     }
@@ -737,7 +765,7 @@ function App() {
       window.clearTimeout(timeoutId);
       window.removeEventListener("resize", resizeMap);
     };
-  }, [sidebarOpen]);
+  }, [appStarted, sidebarOpen]);
 
   useEffect(() => {
     if (showLoader || ageGateStatus !== "accepted" || popupDismissed) {
@@ -770,6 +798,123 @@ function App() {
   useEffect(() => {
     setFlagError("");
   }, [selectedId]);
+
+  function handleStartApp() {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    setAppStarted(true);
+  }
+
+  function handleReturnToLanding() {
+    setAppStarted(false);
+    setPopupVisible(false);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  if (!appStarted) {
+    return (
+      <main className="landing-shell">
+        <section
+          id="landing-details"
+          className="landing-section landing-section-problem"
+          aria-label="Problem"
+        >
+          <div className="landing-section-copy">
+            <h1>Beer prices keep rising faster than wages.</h1>
+            <p>
+              From 2020 to 2025, beer prices in Switzerland rose by about 48
+              percent. Wages rose by about 6.1 percent.
+            </p>
+            <p>
+              If you do not want to overpay, you are stuck going to the same
+              places or walking around to compare.
+            </p>
+            <div className="landing-cta-row">
+              <button
+                type="button"
+                className="control-button control-button-prices landing-primary-cta"
+                onClick={handleStartApp}
+              >
+                Try it out
+              </button>
+              <a className="landing-secondary-cta" href="#solution">
+                Check out our solution
+              </a>
+            </div>
+          </div>
+          <div className="landing-section-media landing-section-media-problem">
+            <img
+              src={priceIncreaseGraphic}
+              alt="Beer prices in Switzerland increased by around 48 percent from 2020 to 2025, while wages increased by around 6.1 percent."
+            />
+          </div>
+        </section>
+
+        <section
+          id="solution"
+          className="landing-section landing-section-solution"
+          aria-label="Solution"
+        >
+          <div className="landing-section-copy">
+            <img className="landing-logo" src={logoLight} alt="Stange Check" />
+            <h2>Stange Check helps you compare beer prices around you.</h2>
+            <p>
+              Stange Check is a website that helps you quickly compare beer
+              prices around you, so you can find affordable options without
+              wasting time or overspending.
+            </p>
+            <p className="landing-section-note">
+              Currently limited to the city of Zug and focused on 0.5L lager
+              prices, with expansion planned later.
+            </p>
+            <div className="landing-cta-row">
+              <button
+                type="button"
+                className="control-button control-button-prices landing-primary-cta"
+                onClick={handleStartApp}
+              >
+                Try it out
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-section landing-section-how" aria-label="How it works">
+          <div className="landing-section-copy">
+            <h2>How it works.</h2>
+            <p>
+              We run four scripts. First, we collect venue data from OSM. Then
+              we scrape venue websites for beer price information.
+            </p>
+            <p>
+              If data is missing, we reach out automatically. Finally, an agent
+              monitors the inbox and updates the database autonomously.
+            </p>
+          </div>
+          <div className="landing-section-media landing-section-media-tech">
+            <img
+              src={techstackGraphic}
+              alt="Stange Check tech stack overview."
+            />
+          </div>
+        </section>
+
+        <section className="landing-plane-strip">
+          <img
+            className="landing-plane"
+            src={planeBanner}
+            alt=""
+          />
+          <button
+            type="button"
+            className="landing-secondary-cta"
+            onClick={handleStartApp}
+          >
+            Open Stange Check
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <div className="screen">
@@ -847,13 +992,18 @@ function App() {
       ) : null}
 
       <header ref={topbarRef} className="floating-topbar">
-        <div className="brand">
+        <button
+          type="button"
+          className="brand brand-home-button"
+          onClick={handleReturnToLanding}
+          aria-label="Back to landing page"
+        >
           <img
             className="brand-logo"
             src={logoLight}
             alt="Stange Check"
           />
-        </div>
+        </button>
 
         <form className="search-shell" onSubmit={handleSearchSubmit}>
           <label className="search-label" htmlFor="venue-search">
