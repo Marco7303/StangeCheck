@@ -8,6 +8,8 @@ This directory contains backend-style jobs and services that feed Supabase.
 - `check-websites` crawls known venue websites and extracts 0.5L lager prices.
 - `gmail-ingest` scans Gmail manually, extracts beer prices from emails, updates
   matching `venues` rows, and archives processed Gmail messages.
+- `gmail-outreach` scans Supabase manually for venues without prices and sends
+  a prewritten Gmail request for the current 0.5L draft beer price.
 
 Each package has its own `README.md`, `requirements.txt`, and setup/run notes.
 
