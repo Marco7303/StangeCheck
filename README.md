@@ -1,6 +1,12 @@
+![Stange Check logo](apps/web/src/assets/logo-light.svg)
+
 # Stange Check
 
 Small monorepo for the Stange Check frontend and the data jobs that feed it.
+
+Stange Check helps people compare beer prices around them so they can find more affordable options quickly. The project was built around a simple idea: beer prices in Switzerland have been rising fast, and it should be easier to see where a reasonably priced `0.5L` lager is still available.
+
+Live app: https://stange-check.vercel.app/
 
 ## Project Map
 
