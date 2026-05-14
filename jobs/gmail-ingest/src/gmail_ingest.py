@@ -18,7 +18,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if load_dotenv:
     load_dotenv(dotenv_path=REPO_ROOT / ".env")
 
-GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
+GMAIL_SCOPES = [
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.send",
+]
 MAX_EMAIL_TEXT_CHARS = 20000
 
 
