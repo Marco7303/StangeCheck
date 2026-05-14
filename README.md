@@ -9,7 +9,6 @@ This repository is now structured as a small monorepo.
 - `jobs/check-websites` contains the website price extraction job.
 - `jobs/gmail-ingest` contains the manual Gmail price ingestion job.
 - `supabase/migrations` contains database schema changes.
-- `docs` contains lightweight project documentation.
 
 ## Frontend
 
@@ -33,8 +32,6 @@ The planned POC architecture is:
 OSM/Overpass -> import job -> Supabase -> web frontend
 Gmail inbox -> manual Gmail ingest -> OpenAI -> Supabase
 ```
-
-See `docs/architecture.md` for a short overview.
 
 ## Secrets
 
