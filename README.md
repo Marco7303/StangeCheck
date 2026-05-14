@@ -1,44 +1,31 @@
-# Stange Check Monorepo
+# Stange Check
 
-This repository is now structured as a small monorepo.
+Small monorepo for the Stange Check frontend and the data jobs that feed it.
 
-## Layout
+## Project Map
 
-- `apps/web` contains the Vite frontend.
-- `jobs/import-osm` contains the OSM to Supabase import job.
-- `jobs/check-websites` contains the website price extraction job.
-- `jobs/gmail-ingest` contains the manual Gmail price ingestion job.
-- `jobs/gmail-outreach` contains the manual Gmail outreach job.
-- `supabase/migrations` contains database schema changes.
+- [apps/web/README.md](./apps/web/README.md) explains how to install, configure, and run the web app.
+- [jobs/README.md](./jobs/README.md) gives the backend jobs overview.
+- [jobs/import-osm/README.md](./jobs/import-osm/README.md) covers importing venues from OSM/Overpass into Supabase.
+- [jobs/check-websites/README.md](./jobs/check-websites/README.md) covers website-based price extraction.
+- [jobs/gmail-ingest/README.md](./jobs/gmail-ingest/README.md) covers manual Gmail ingestion into Supabase.
+- [jobs/gmail-outreach/README.md](./jobs/gmail-outreach/README.md) covers manual outreach to venues without prices.
 
-## Frontend
+## Repo Layout
 
-The current frontend lives in `apps/web` and should behave exactly as before.
+- `apps/web` contains the Vite + React frontend.
+- `jobs` contains the Python jobs and their package-specific documentation.
+- `.env.example` is the committed template for local configuration.
 
-Run it with:
-
-```bash
-cd apps/web
-npm install
-npm run dev
-```
-
-The frontend reads environment variables from the monorepo root `.env`.
-
-## Planned Data Flow
-
-The planned POC architecture is:
+## Data Flow
 
 ```text
 OSM/Overpass -> import job -> Supabase -> web frontend
+Venue websites -> website checker -> Supabase -> web frontend
 Gmail inbox -> manual Gmail ingest -> OpenAI -> Supabase
 Supabase venues without prices -> manual Gmail outreach -> venue inbox
 ```
 
-## Secrets
+## Local Config
 
-Secrets must never be committed.
-
-- Keep local secrets in untracked `.env` files only.
-- Use the monorepo root `.env` for local configuration.
-- Commit only the root `.env.example`.
+Keep real secrets in an untracked root `.env` file and use `.env.example` as the template.
