@@ -10,7 +10,6 @@ This repository is now structured as a small monorepo.
 - `jobs/gmail-ingest` contains the manual Gmail price ingestion job.
 - `jobs/gmail-outreach` contains the manual Gmail outreach job.
 - `supabase/migrations` contains database schema changes.
-- `docs` contains lightweight project documentation.
 
 ## Frontend
 
@@ -35,8 +34,6 @@ OSM/Overpass -> import job -> Supabase -> web frontend
 Gmail inbox -> manual Gmail ingest -> OpenAI -> Supabase
 Supabase venues without prices -> manual Gmail outreach -> venue inbox
 ```
-
-See `docs/architecture.md` for a short overview.
 
 ## Secrets
 
